@@ -11,7 +11,7 @@ export default async function Header() {
   } = await supabase.auth.getUser()
 
   return (
-    <header className="bg-white shadow-md">
+    <header className="bg-white shadow-md sticky top-0 z-50">
       <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
         <Link href="/" className="text-2xl font-bold text-indigo-600">
           TurboClone
@@ -19,7 +19,12 @@ export default async function Header() {
         <div className="flex items-center space-x-4">
           {user ? (
             <>
-              <span className="text-gray-700 hidden sm:block">{user.email}</span>
+              <Link href="/favoriler" className="text-gray-600 hover:text-indigo-600 hidden sm:block">
+                Favorilər
+              </Link>
+              <Link href="/profil" className="text-gray-600 hover:text-indigo-600 hidden sm:block">
+                Profil
+              </Link>
               <Link
                 href="/elan-yerlesdir"
                 className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700"
