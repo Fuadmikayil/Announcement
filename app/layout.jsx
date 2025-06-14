@@ -1,7 +1,8 @@
 
 import { Inter } from 'next/font/google'
 import './globals.css'
-import Header from '@/components/Header' // Header-i import edirik
+import Header from '@/components/Header'
+import Footer from '@/components/Footer' // Footer-i import edirik
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -12,12 +13,13 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="az">
-      <body className={inter.className}>
-        <Header /> {/* Header-i bura əlavə edirik */}
-        <main className="bg-gray-100">
+    <html lang="az" className="scroll-smooth">
+      <body className={`${inter.className} bg-gray-100 flex flex-col min-h-screen`}>
+        <Header />
+        <main className="flex-grow">
           {children}
         </main>
+        <Footer /> {/* Footer-i bura əlavə edirik */}
       </body>
     </html>
   )
