@@ -1,22 +1,49 @@
 
 import { createClient } from '@/lib/supabase/server'
 import ListingCard from '@/components/ListingCard'
-import Link from 'next/link';
+import Link from 'next/link'
+import SearchFilters from '@/components/SearchFilters' // Yeni komponenti import edirik
 
 export default async function HomePage({ searchParams }) {
-  const supabase = createClient();
+  const supabase = createClient()
 
-  // Yalnız statusu 'approved' olan elanları çəkirik
-  // Təsdiqlənmə tarixinə görə ən yeniləri yuxarıda göstəririk
-  const { data: listings, error } = await supabase
+  // --- Axtarış Məntiqi ---
+  let query = supabase
     .from('listings')
     .select('*')
     .eq('status', 'approved')
-    .order('approved_at', { ascending: false });
+
+  // Filtrləri tətbiq edirik
+  if (searchParams.brand) {
+    query = query.ilike('brand', `%${searchParams.brand}%`)
+  }
+  if (searchParams.model) {
+    query = query.ilike('model', `%${searchParams.model}%`)
+  }
+  if (searchParams.minPrice) {
+    query = query.gte('price', searchParams.minPrice)
+  }
+  if (searchParams.maxPrice) {
+    query = query.lte('price', searchParams.maxPrice)
+  }
+
+  // Nəticələri çəkirik
+  const { data: listings, error } = await query.order('approved_at', { ascending: false })
 
   if (error) {
-    console.error("Təsdiqlənmiş elanları çəkərkən xəta:", error);
+    console.error("Elanları çəkərkən xəta:", error)
   }
+  
+  // Marka siyahısını almaq üçün əlavə sorğu
+  const { data: uniqueBrands } = await supabase
+    .from('listings')
+    .select('brand')
+    .eq('status', 'approved');
+
+  // Duplikatları aradan qaldırmaq
+  const brandSet = new Set(uniqueBrands?.map(item => item.brand));
+  const distinctBrands = Array.from(brandSet).map(brand => ({ brand }));
+
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -25,7 +52,12 @@ export default async function HomePage({ searchParams }) {
           {searchParams.message}
         </div>
       )}
-      <h1 className="text-3xl font-bold mb-6">Son Elanlar</h1>
+
+      <SearchFilters uniqueBrands={distinctBrands} /> {/* Axtarış komponentini əlavə edirik */}
+
+      <h1 className="text-3xl font-bold mb-6">
+        {Object.keys(searchParams).length > 0 ? 'Axtarış Nəticələri' : 'Son Elanlar'}
+      </h1>
       
       {listings && listings.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -35,12 +67,12 @@ export default async function HomePage({ searchParams }) {
         </div>
       ) : (
         <div className="text-center py-20">
-            <p className="text-gray-500 text-lg">Hələlik heç bir təsdiqlənmiş elan yoxdur.</p>
-            <Link href="/elan-yerlesdir" className="mt-4 inline-block px-6 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700">
-                İlk Elanı Siz Yerləşdirin!
+            <p className="text-gray-500 text-lg">Axtarışınıza uyğun elan tapılmadı.</p>
+            <Link href="/" className="mt-4 inline-block text-indigo-600 hover:underline">
+                Bütün elanlara baxın
             </Link>
         </div>
       )}
     </div>
-  );
+  )
 }
