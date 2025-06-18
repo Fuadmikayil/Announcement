@@ -88,6 +88,10 @@ export default async function ProfilePage() {
               </div>
               <div className="flex items-center gap-4">
                 {getStatusBadge(listing.status)}
+                {/* YENİ ƏLAVƏ OLUNAN LİNK */}
+                <Link href={`/profil/elanlar/${listing.id}/edit`} className="px-3 py-1 text-sm font-medium text-blue-600 hover:text-white hover:bg-blue-600 border border-blue-300 rounded-md transition-colors">
+                  Redaktə et
+                </Link>
                 <form action={deleteListing}>
                   <input type="hidden" name="listingId" value={listing.id} />
                   <button type="submit" className="px-3 py-1 text-sm font-medium text-red-600 hover:text-white hover:bg-red-600 border border-red-300 rounded-md transition-colors">
