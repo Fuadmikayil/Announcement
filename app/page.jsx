@@ -2,18 +2,21 @@
 import { createClient } from '@/lib/supabase/server'
 import ListingCard from '@/components/ListingCard'
 import Link from 'next/link'
-import SearchFilters from '@/components/SearchFilters' // Yeni komponenti import edirik
+import SearchFilters from '@/components/SearchFilters'
+import Pagination from '@/components/Pagination' // Pagination komponentini import edirik
+
+const LISTINGS_PER_PAGE = 12; // Hər səhifədə göstəriləcək elan sayı
 
 export default async function HomePage({ searchParams }) {
   const supabase = createClient()
+  const currentPage = Number(searchParams.page) || 1;
 
-  // --- Axtarış Məntiqi ---
+  // --- Axtarış və Filtrləmə Məntiqi ---
   let query = supabase
     .from('listings')
-    .select('*')
+    .select('*', { count: 'exact' }) // 'count: exact' ilə ümumi sayı alırıq
     .eq('status', 'approved')
 
-  // Filtrləri tətbiq edirik
   if (searchParams.brand) {
     query = query.ilike('brand', `%${searchParams.brand}%`)
   }
@@ -27,23 +30,28 @@ export default async function HomePage({ searchParams }) {
     query = query.lte('price', searchParams.maxPrice)
   }
 
+  // Səhifələmə üçün aralığı təyin edirik
+  const from = (currentPage - 1) * LISTINGS_PER_PAGE;
+  const to = from + LISTINGS_PER_PAGE - 1;
+  query = query.range(from, to);
+
   // Nəticələri çəkirik
-  const { data: listings, error } = await query.order('approved_at', { ascending: false })
+  const { data: listings, error, count } = await query.order('approved_at', { ascending: false })
 
   if (error) {
     console.error("Elanları çəkərkən xəta:", error)
   }
   
-  // Marka siyahısını almaq üçün əlavə sorğu
+  const totalPages = Math.ceil(count / LISTINGS_PER_PAGE);
+
+  // Marka siyahısını almaq üçün əlavə sorğu (bunu optimizasiya etmək olar)
   const { data: uniqueBrands } = await supabase
     .from('listings')
     .select('brand')
     .eq('status', 'approved');
 
-  // Duplikatları aradan qaldırmaq
   const brandSet = new Set(uniqueBrands?.map(item => item.brand));
   const distinctBrands = Array.from(brandSet).map(brand => ({ brand }));
-
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -53,18 +61,21 @@ export default async function HomePage({ searchParams }) {
         </div>
       )}
 
-      <SearchFilters uniqueBrands={distinctBrands} /> {/* Axtarış komponentini əlavə edirik */}
+      <SearchFilters uniqueBrands={distinctBrands} />
 
       <h1 className="text-3xl font-bold mb-6">
-        {Object.keys(searchParams).length > 0 ? 'Axtarış Nəticələri' : 'Son Elanlar'}
+        {Object.keys(searchParams).filter(k => k !== 'page').length > 0 ? 'Axtarış Nəticələri' : 'Son Elanlar'}
       </h1>
       
       {listings && listings.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {listings.map((listing) => (
-            <ListingCard key={listing.id} listing={listing} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {listings.map((listing) => (
+              <ListingCard key={listing.id} listing={listing} />
+            ))}
+          </div>
+          <Pagination totalPages={totalPages} />
+        </>
       ) : (
         <div className="text-center py-20">
             <p className="text-gray-500 text-lg">Axtarışınıza uyğun elan tapılmadı.</p>
