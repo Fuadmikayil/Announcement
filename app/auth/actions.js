@@ -7,6 +7,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
 
 export async function login(formData) {
   const supabase = createClient()
@@ -64,3 +65,24 @@ export async function signOut() {
     await supabase.auth.signOut()
     return redirect('/login')
   }
+
+// YENİ FUNKSİYA
+export async function signInWithGoogle() {
+  const supabase = createClient()
+  const origin = headers().get('origin') // Callback üçün host adını alırıq
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${origin}/auth/callback`,
+    },
+  })
+
+  if (error) {
+    console.error('Google ilə daxil olma xətası:', error)
+    return redirect('/login?message=Google ilə daxil olmaq mümkün olmadı.')
+  }
+
+  // İstifadəçini Google-un autentifikasiya səhifəsinə yönləndiririk
+  return redirect(data.url)
+}
