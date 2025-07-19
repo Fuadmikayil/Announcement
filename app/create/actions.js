@@ -1,3 +1,4 @@
+
 'use server'
 import { createClient } from '../../lib/supabase/server'
 import { revalidatePath } from 'next/cache'
@@ -6,15 +7,25 @@ import { redirect } from 'next/navigation'
 export async function createListing(formData) {
   const supabase = createClient()
   
-  // 1. İstifadəçini yoxla
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) { 
-    // İstifadəçi yoxdursa, login səhifəsinə yönləndir
     return redirect('/login') 
   }
 
-  // 2. Məlumatları bazaya yazmağa cəhd et
   try {
+    const phoneNumber = formData.get('phone_number');
+
+    if (phoneNumber) {
+        const { error: profileError } = await supabase
+            .from('profiles')
+            .update({ phone_number: phoneNumber })
+            .eq('id', user.id);
+        
+        if (profileError) {
+            throw new Error(`Profil yenilənmədi: ${profileError.message}`);
+        }
+    }
+
     const listingData = {
       user_id: user.id,
       brand: formData.get('brand'),
@@ -31,22 +42,18 @@ export async function createListing(formData) {
       image_urls: formData.get('image_urls').split(','),
     }
     
-    // Məlumatları 'listings' cədvəlinə əlavə edirik
-    const { error } = await supabase.from('listings').insert([listingData])
+    const { error: listingError } = await supabase.from('listings').insert([listingData])
     
-    // Əgər Supabase tərəfindən bir xəta gələrsə, onu "catch" bloku tutacaq
-    if (error) { 
-      throw error;
+    if (listingError) { 
+      throw listingError;
     }
     
   } catch (error) {
     console.error("Elan yaratma xətası:", error.message);
-    // Xəta baş verdikdə istifadəçini xəta mesajı ilə birlikdə geri yönləndiririk
-    // URL-də boşluq olmaması üçün mesajları "_" ilə yazırıq
-    return redirect(`/create?message=Xeta_bas_verdi`) 
+    return redirect(`/create?message=Elan_yaradilarken_xeta_bas_verdi`) 
   }
 
-  // 3. Hər şey uğurlu olarsa, cache-i təmizlə və ana səhifəyə yönləndir
   revalidatePath('/')
+  revalidatePath('/profil')
   redirect('/?message=Elaniniz_ugurla_gonderildi')
 }

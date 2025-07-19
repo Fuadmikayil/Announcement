@@ -51,6 +51,9 @@ export async function signup(formData) {
 export async function signOut() {
     const supabase = createClient();
     await supabase.auth.signOut();
+    
+    // DÜZƏLİŞ: Çıxış etdikdən sonra da cache-i təmizləyirik
+    revalidatePath('/', 'layout');
     return redirect('/login');
 }
 
