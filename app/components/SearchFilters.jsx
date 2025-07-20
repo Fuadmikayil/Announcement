@@ -1,4 +1,4 @@
-// FAYL: /app/components/SearchFilters.jsx (YENİLƏNMİŞ DİZAYN)
+// FAYL: /app/components/SearchFilters.jsx (YENİLƏNMİŞ DİZAYN VƏ FUNKSİONALLIQ)
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -8,24 +8,31 @@ export default function SearchFilters({ uniqueValues }) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
+  // Bütün axtarış sahələri üçün state-lər
   const [brand, setBrand] = useState(searchParams.get('brand') || '')
   const [model, setModel] = useState(searchParams.get('model') || '')
+  const [city, setCity] = useState(searchParams.get('city') || '')
   const [minPrice, setMinPrice] = useState(searchParams.get('minPrice') || '')
   const [maxPrice, setMaxPrice] = useState(searchParams.get('maxPrice') || '')
-  const [city, setCity] = useState(searchParams.get('city') || '')
+  const [minYear, setMinYear] = useState(searchParams.get('minYear') || '')
+  const [maxYear, setMaxYear] = useState(searchParams.get('maxYear') || '')
   const [fuelType, setFuelType] = useState(searchParams.get('fuelType') || '')
   const [transmission, setTransmission] = useState(searchParams.get('transmission') || '')
+  const [color, setColor] = useState(searchParams.get('color') || '')
 
   const handleSearch = (e) => {
     e.preventDefault()
     const params = new URLSearchParams()
     if (brand) params.set('brand', brand)
     if (model) params.set('model', model)
+    if (city) params.set('city', city)
     if (minPrice) params.set('minPrice', minPrice)
     if (maxPrice) params.set('maxPrice', maxPrice)
-    if (city) params.set('city', city)
+    if (minYear) params.set('minYear', minYear)
+    if (maxYear) params.set('maxYear', maxYear)
     if (fuelType) params.set('fuelType', fuelType)
     if (transmission) params.set('transmission', transmission)
+    if (color) params.set('color', color)
     
     router.push(`/?${params.toString()}`)
   }
@@ -36,7 +43,7 @@ export default function SearchFilters({ uniqueValues }) {
 
   return (
     <div className="bg-white p-6 rounded-2xl shadow-lg mb-8 border border-gray-200">
-      <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-x-6 gap-y-4">
+      <form onSubmit={handleSearch} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
         {/* Marka */}
         <div>
           <label htmlFor="brand" className="block text-sm font-medium text-gray-600 mb-1">Marka</label>
@@ -58,26 +65,52 @@ export default function SearchFilters({ uniqueValues }) {
             {uniqueValues?.cities?.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
+        {/* Rəng */}
+        <div>
+          <label htmlFor="color" className="block text-sm font-medium text-gray-600 mb-1">Rəng</label>
+          <input type="text" id="color" value={color} onChange={(e) => setColor(e.target.value)} className="w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="İstənilən" />
+        </div>
         {/* Qiymət aralığı */}
-        <div className="lg:col-span-1 xl:col-span-2 grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           <div>
             <label htmlFor="min-price" className="block text-sm font-medium text-gray-600 mb-1">Qiymət, min.</label>
-            <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">₼</span>
-                <input type="number" id="min-price" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} className="w-full pl-7 pr-3 py-2 text-gray-900 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="0" />
-            </div>
+            <input type="number" id="min-price" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} className="w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="0" />
           </div>
           <div>
             <label htmlFor="max-price" className="block text-sm font-medium text-gray-600 mb-1">maks.</label>
-            <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">₼</span>
-                <input type="number" id="max-price" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} className="w-full pl-7 pr-3 py-2 text-gray-900 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="∞" />
-            </div>
+            <input type="number" id="max-price" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} className="w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="∞" />
           </div>
+        </div>
+        {/* Buraxılış ili aralığı */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="min-year" className="block text-sm font-medium text-gray-600 mb-1">İl, min.</label>
+            <input type="number" id="min-year" value={minYear} onChange={(e) => setMinYear(e.target.value)} className="w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="1980" />
+          </div>
+          <div>
+            <label htmlFor="max-year" className="block text-sm font-medium text-gray-600 mb-1">maks.</label>
+            <input type="number" id="max-year" value={maxYear} onChange={(e) => setMaxYear(e.target.value)} className="w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder={new Date().getFullYear()} />
+          </div>
+        </div>
+        {/* Yanacaq növü */}
+        <div>
+          <label htmlFor="fuelType" className="block text-sm font-medium text-gray-600 mb-1">Yanacaq növü</label>
+          <select id="fuelType" value={fuelType} onChange={(e) => setFuelType(e.target.value)} className="w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 transition">
+            <option value="">Hamısı</option>
+            {uniqueValues?.fuelTypes?.map(f => <option key={f} value={f}>{f}</option>)}
+          </select>
+        </div>
+        {/* Sürətlər qutusu */}
+        <div>
+          <label htmlFor="transmission" className="block text-sm font-medium text-gray-600 mb-1">Sürətlər qutusu</label>
+          <select id="transmission" value={transmission} onChange={(e) => setTransmission(e.target.value)} className="w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 transition">
+            <option value="">Hamısı</option>
+            {uniqueValues?.transmissions?.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
         </div>
         
         {/* Düymələr */}
-        <div className="md:col-span-2 lg:col-span-3 xl:col-span-5 grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+        <div className="lg:col-span-4 grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
            <button type="button" onClick={clearFilters} className="w-full px-4 py-3 text-sm font-semibold text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors">
             Filtri Təmizlə
            </button>
