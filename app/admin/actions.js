@@ -1,85 +1,65 @@
 
+// FAYL: /app/admin/actions.js (YENİLƏNMİŞ)
 'use server'
-
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '../../lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
-// Elanı təsdiqləmək üçün funksiya
 export async function approveListing(formData) {
-  const supabase = createClient()
   const listingId = formData.get('listingId')
+  const supabase = createClient()
 
-  if (!listingId) {
-    console.error('Listing ID tapılmadı.')
-    return
-  }
-
-  // Admin rolunu yoxlayaq (əlavə təhlükəsizlik üçün)
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return redirect('/login')
+  if (!user) { return redirect('/login') }
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
+  try {
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    if (profile?.role !== 'admin') {
+      throw new Error('Səlahiyyətiniz yoxdur.')
+    }
 
-  if (profile?.role !== 'admin') {
-    return redirect('/?message=Səlahiyyətiniz yoxdur.')
+    const { error } = await supabase
+      .from('listings')
+      .update({ status: 'approved', approved_at: new Date().toISOString() })
+      .eq('id', listingId)
+    
+    if (error) { throw error }
+
+  } catch (error) {
+    console.error("Elan təsdiqləmə xətası:", error.message)
+    return redirect(`/admin?message=Xeta_bas_verdi`)
   }
 
-  // Elanın statusunu 'approved' olaraq yeniləyirik
-  const { error } = await supabase
-    .from('listings')
-    .update({ status: 'approved', approved_at: new Date().toISOString() })
-    .eq('id', listingId)
-
-  if (error) {
-    console.error('Elan təsdiqləmə xətası:', error)
-    return
-  }
-
-  // Admin panelini və ana səhifəni yeniləyirik
   revalidatePath('/admin')
   revalidatePath('/')
+  redirect('/admin?message=Elan_tesdiqlendi')
 }
 
-// Elanı rədd etmək üçün funksiya
 export async function rejectListing(formData) {
-  const supabase = createClient()
   const listingId = formData.get('listingId')
+  const supabase = createClient()
 
-  if (!listingId) {
-    console.error('Listing ID tapılmadı.')
-    return
-  }
-  
-  // Admin rolunu yoxlayaq
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return redirect('/login')
+  if (!user) { return redirect('/login') }
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
+  try {
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    if (profile?.role !== 'admin') {
+      throw new Error('Səlahiyyətiniz yoxdur.')
+    }
 
-  if (profile?.role !== 'admin') {
-    return redirect('/?message=Səlahiyyətiniz yoxdur.')
-  }
+    const { error } = await supabase
+      .from('listings')
+      .update({ status: 'rejected' })
+      .eq('id', listingId)
+    
+    if (error) { throw error }
 
-
-  // Elanın statusunu 'rejected' olaraq yeniləyirik
-  const { error } = await supabase
-    .from('listings')
-    .update({ status: 'rejected' })
-    .eq('id', listingId)
-
-  if (error) {
-    console.error('Elan rədd etmə xətası:', error)
-    return
+  } catch (error) {
+    console.error("Elan rədd etmə xətası:", error.message)
+    return redirect(`/admin?message=Xeta_bas_verdi`)
   }
 
   revalidatePath('/admin')
+  redirect('/admin?message=Elan_redd_edildi')
 }

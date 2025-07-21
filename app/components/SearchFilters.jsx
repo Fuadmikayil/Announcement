@@ -8,7 +8,6 @@ export default function SearchFilters({ uniqueValues }) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  // Mövcud parametrləri URL-dən götürərək formanın ilkin vəziyyətini təyin edirik
   const [brand, setBrand] = useState(searchParams.get('brand') || '')
   const [model, setModel] = useState(searchParams.get('model') || '')
   const [minPrice, setMinPrice] = useState(searchParams.get('minPrice') || '')
@@ -41,7 +40,7 @@ export default function SearchFilters({ uniqueValues }) {
         {/* Marka */}
         <div>
           <label htmlFor="brand" className="block text-sm font-medium text-gray-700">Marka</label>
-          <input type="text" id="brand" list="brands-list" value={brand} onChange={(e) => setBrand(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" placeholder="Bütün markalar" />
+          <input type="text" id="brand" list="brands-list" value={brand} onChange={(e) => setBrand(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900" placeholder="Bütün markalar" />
           <datalist id="brands-list">
             {uniqueValues?.brands?.map((b) => <option key={b} value={b} />)}
           </datalist>
@@ -49,12 +48,12 @@ export default function SearchFilters({ uniqueValues }) {
         {/* Model */}
         <div>
           <label htmlFor="model" className="block text-sm font-medium text-gray-700">Model</label>
-          <input type="text" id="model" value={model} onChange={(e) => setModel(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" placeholder="Bütün modellər" />
+          <input type="text" id="model" value={model} onChange={(e) => setModel(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900" placeholder="Bütün modellər" />
         </div>
         {/* Şəhər */}
         <div>
           <label htmlFor="city" className="block text-sm font-medium text-gray-700">Şəhər</label>
-          <select id="city" value={city} onChange={(e) => setCity(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+          <select id="city" value={city} onChange={(e) => setCity(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900">
             <option value="">Bütün şəhərlər</option>
             {uniqueValues?.cities?.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
@@ -62,7 +61,7 @@ export default function SearchFilters({ uniqueValues }) {
         {/* Yanacaq növü */}
         <div>
           <label htmlFor="fuelType" className="block text-sm font-medium text-gray-700">Yanacaq növü</label>
-          <select id="fuelType" value={fuelType} onChange={(e) => setFuelType(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+          <select id="fuelType" value={fuelType} onChange={(e) => setFuelType(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900">
             <option value="">Hamısı</option>
             {uniqueValues?.fuelTypes?.map(f => <option key={f} value={f}>{f}</option>)}
           </select>
@@ -70,7 +69,7 @@ export default function SearchFilters({ uniqueValues }) {
         {/* Sürətlər qutusu */}
         <div>
           <label htmlFor="transmission" className="block text-sm font-medium text-gray-700">Sürətlər qutusu</label>
-          <select id="transmission" value={transmission} onChange={(e) => setTransmission(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+          <select id="transmission" value={transmission} onChange={(e) => setTransmission(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900">
             <option value="">Hamısı</option>
             {uniqueValues?.transmissions?.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
@@ -79,11 +78,11 @@ export default function SearchFilters({ uniqueValues }) {
         <div className="flex items-end gap-2">
           <div>
             <label htmlFor="min-price" className="block text-sm font-medium text-gray-700">Qiymət, min.</label>
-            <input type="number" id="min-price" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" placeholder="0" />
+            <input type="number" id="min-price" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900" placeholder="0" />
           </div>
           <div>
             <label htmlFor="max-price" className="block text-sm font-medium text-gray-700">maks.</label>
-            <input type="number" id="max-price" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" placeholder="∞" />
+            <input type="number" id="max-price" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900" placeholder="∞" />
           </div>
         </div>
         {/* Düymələr */}

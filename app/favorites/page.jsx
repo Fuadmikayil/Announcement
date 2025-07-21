@@ -1,7 +1,7 @@
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '../../lib/supabase/server'
 import { redirect } from 'next/navigation'
-import ListingCard from '@/components/ListingCard'
+import ListingCard from '../components/ListingCard.jsx'
 import Link from 'next/link'
 
 export default async function FavoritesPage() {
@@ -13,19 +13,24 @@ export default async function FavoritesPage() {
   }
 
   // Favoriləri və onlara bağlı elan məlumatlarını çəkirik
+  // Bu sorğu, favorites cədvəlindən istifadəçiyə aid olan sətirləri tapır
+  // və sonra həmin sətirlərdəki listing_id-yə uyğun olan məlumatları listings cədvəlindən gətirir.
   const { data: favorites, error } = await supabase
     .from('favorites')
-    .select(`
-      listing_id,
-      listings (*)
-    `)
+    .select('listings (*)') // "listings" cədvəlindən bütün məlumatları gətir
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
   if (error) {
     console.error('Favoriləri çəkərkən xəta:', error)
+    return (
+        <div className="text-center py-20">
+            <p className="text-red-500 text-lg">Favoriləri yükləmək mümkün olmadı.</p>
+        </div>
+    )
   }
 
+  // Supabase-dən gələn məlumatları düzgün formata salırıq
   const favoriteListings = favorites ? favorites.map(fav => fav.listings).filter(Boolean) : []
 
   return (
