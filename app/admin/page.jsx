@@ -90,7 +90,7 @@ export default async function AdminPage({ searchParams }) {
                     </form>
                 )}
                 <Link 
-                    href={`/elanlar/${listing.id}/edit`} 
+                    href={`/create/${listing.id}/edit`} 
                     className="w-full text-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
                 >
                     Redaktə Et
