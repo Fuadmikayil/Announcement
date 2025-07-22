@@ -1,16 +1,18 @@
-// FAYL: /app/components/SearchFilters.jsx (YENİLƏNMİŞ DİZAYN VƏ FUNKSİONALLIQ)
+
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export default function SearchFilters({ uniqueValues }) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  // Bütün axtarış sahələri üçün state-lər
-  const [brand, setBrand] = useState(searchParams.get('brand') || '')
+  const [brandId, setBrandId] = useState(searchParams.get('brandId') || '')
   const [model, setModel] = useState(searchParams.get('model') || '')
+  const [models, setModels] = useState([])
+  const [isLoadingModels, setIsLoadingModels] = useState(false)
+  
   const [city, setCity] = useState(searchParams.get('city') || '')
   const [minPrice, setMinPrice] = useState(searchParams.get('minPrice') || '')
   const [maxPrice, setMaxPrice] = useState(searchParams.get('maxPrice') || '')
@@ -20,10 +22,35 @@ export default function SearchFilters({ uniqueValues }) {
   const [transmission, setTransmission] = useState(searchParams.get('transmission') || '')
   const [color, setColor] = useState(searchParams.get('color') || '')
 
+  useEffect(() => {
+    const fetchModels = async () => {
+      if (!brandId) {
+        setModels([]);
+        setModel('');
+        return;
+      }
+      setIsLoadingModels(true);
+      try {
+        const response = await fetch(`/api/models?brand_id=${brandId}`);
+        const data = await response.json();
+        setModels(data || []);
+      } catch (error) {
+        console.error("Modelləri çəkmək mümkün olmadı:", error);
+        setModels([]);
+      } finally {
+        setIsLoadingModels(false);
+      }
+    };
+    fetchModels();
+  }, [brandId]);
+
   const handleSearch = (e) => {
     e.preventDefault()
     const params = new URLSearchParams()
-    if (brand) params.set('brand', brand)
+    
+    const selectedBrand = uniqueValues.brands.find(b => b.id === parseInt(brandId, 10));
+    if (selectedBrand) params.set('brand', selectedBrand.name);
+    
     if (model) params.set('model', model)
     if (city) params.set('city', city)
     if (minPrice) params.set('minPrice', minPrice)
@@ -47,15 +74,18 @@ export default function SearchFilters({ uniqueValues }) {
         {/* Marka */}
         <div>
           <label htmlFor="brand" className="block text-sm font-medium text-gray-600 mb-1">Marka</label>
-          <input type="text" id="brand" list="brands-list" value={brand} onChange={(e) => setBrand(e.target.value)} className="w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="Bütün markalar" />
-          <datalist id="brands-list">
-            {uniqueValues?.brands?.map((b) => <option key={b} value={b} />)}
-          </datalist>
+          <select id="brand" value={brandId} onChange={(e) => setBrandId(e.target.value)} className="w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 transition">
+            <option value="">Bütün markalar</option>
+            {uniqueValues?.brands?.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+          </select>
         </div>
         {/* Model */}
         <div>
           <label htmlFor="model" className="block text-sm font-medium text-gray-600 mb-1">Model</label>
-          <input type="text" id="model" value={model} onChange={(e) => setModel(e.target.value)} className="w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="Bütün modellər" />
+          <select id="model" value={model} onChange={(e) => setModel(e.target.value)} disabled={!brandId || isLoadingModels} className="w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 transition disabled:bg-gray-200">
+            <option value="">Bütün modellər</option>
+            {isLoadingModels ? <option>Yüklənir...</option> : models.map(m => <option key={m.name} value={m.name}>{m.name}</option>)}
+          </select>
         </div>
         {/* Şəhər */}
         <div>
