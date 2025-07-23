@@ -1,6 +1,4 @@
 
-// FAYL: /app/page.jsx (YENİLƏNMİŞ)
-// AÇIQLAMA: Bu səhifə artıq bütün markaları və digər unikal dəyərləri bazadan çəkir və axtarış məntiqi bütün yeni filtrləri dəstəkləyir.
 import { createClient } from '../lib/supabase/server'
 import ListingCard from './components/ListingCard.jsx'
 import Link from 'next/link'
@@ -11,9 +9,10 @@ import Hero from './components/Hero.jsx'
 const LISTINGS_PER_PAGE = 12;
 
 async function getUniqueFilterValues(supabase) {
+    // Şəhərləri yeni "cities" cədvəlindən çəkirik
     const [brandsRes, citiesRes, fuelTypesRes, transmissionsRes] = await Promise.all([
         supabase.from('brands').select('id, name').order('name', { ascending: true }),
-        supabase.from('listings').select('city').eq('status', 'approved'),
+        supabase.from('cities').select('name').order('name', { ascending: true }), // Dəyişdirildi
         supabase.from('listings').select('fuel_type').eq('status', 'approved'),
         supabase.from('listings').select('transmission').eq('status', 'approved'),
     ]);
@@ -27,7 +26,7 @@ async function getUniqueFilterValues(supabase) {
 
     return {
         brands: brandsRes.data || [],
-        cities: getUniqueValues(citiesRes),
+        cities: citiesRes.data.map(c => c.name) || [], // Dəyişdirildi
         fuelTypes: getUniqueValues(fuelTypesRes),
         transmissions: getUniqueValues(transmissionsRes)
     };

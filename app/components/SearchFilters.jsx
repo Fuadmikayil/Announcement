@@ -1,4 +1,6 @@
 
+// FAYL: /app/components/SearchFilters.jsx (DƏYİŞMƏZ, LAKİN KONTEKST ÜÇÜN ƏLAVƏ EDİLİB)
+// AÇIQLAMA: Bu fayl artıq yeni məlumat strukturunu dəstəkləyir, dəyişikliyə ehtiyac yoxdur.
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -145,7 +147,7 @@ export default function SearchFilters({ uniqueValues }) {
             Filtri Təmizlə
            </button>
            <button type="submit" className="w-full flex items-center justify-center px-4 py-3 text-sm font-semibold text-white bg-indigo-600 rounded-md shadow-sm hover:bg-indigo-700 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+            <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
             </svg>
             Axtar
