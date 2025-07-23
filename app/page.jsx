@@ -1,5 +1,6 @@
 
-// FAYL: /app/page.jsx
+// FAYL: /app/page.jsx (YENİLƏNMİŞ)
+// AÇIQLAMA: Bu səhifə artıq bütün markaları və digər unikal dəyərləri bazadan çəkir və axtarış məntiqi bütün yeni filtrləri dəstəkləyir.
 import { createClient } from '../lib/supabase/server'
 import ListingCard from './components/ListingCard.jsx'
 import Link from 'next/link'
@@ -10,39 +11,56 @@ import Hero from './components/Hero.jsx'
 const LISTINGS_PER_PAGE = 12;
 
 async function getUniqueFilterValues(supabase) {
-    const columns = ['brand', 'city', 'fuel_type', 'transmission'];
-    const results = {};
-    for (const column of columns) {
-        const { data, error } = await supabase.from('listings').select(column).eq('status', 'approved');
-        if (!error && data) {
-            const uniqueSet = new Set(data.map(item => item[column]).filter(Boolean));
-            results[column + 's'] = Array.from(uniqueSet).sort();
-        } else { results[column + 's'] = []; }
-    }
-    return results;
+    const [brandsRes, citiesRes, fuelTypesRes, transmissionsRes] = await Promise.all([
+        supabase.from('brands').select('id, name').order('name', { ascending: true }),
+        supabase.from('listings').select('city').eq('status', 'approved'),
+        supabase.from('listings').select('fuel_type').eq('status', 'approved'),
+        supabase.from('listings').select('transmission').eq('status', 'approved'),
+    ]);
+
+    const getUniqueValues = (response) => {
+        if (!response.error && response.data) {
+            return Array.from(new Set(response.data.map(item => Object.values(item)[0]).filter(Boolean))).sort();
+        }
+        return [];
+    };
+
+    return {
+        brands: brandsRes.data || [],
+        cities: getUniqueValues(citiesRes),
+        fuelTypes: getUniqueValues(fuelTypesRes),
+        transmissions: getUniqueValues(transmissionsRes)
+    };
 }
 
 export default async function HomePage({ searchParams }) {
   const page = searchParams['page'] ?? '1';
   const brand = searchParams['brand'] ?? '';
   const model = searchParams['model'] ?? '';
+  const city = searchParams['city'] ?? '';
   const minPrice = searchParams['minPrice'] ?? '';
   const maxPrice = searchParams['maxPrice'] ?? '';
-  const city = searchParams['city'] ?? '';
+  const minYear = searchParams['minYear'] ?? '';
+  const maxYear = searchParams['maxYear'] ?? '';
   const fuelType = searchParams['fuelType'] ?? '';
   const transmission = searchParams['transmission'] ?? '';
+  const color = searchParams['color'] ?? '';
 
   const supabase = createClient();
   const currentPage = Number(page);
 
   let query = supabase.from('listings').select('*', { count: 'exact' }).eq('status', 'approved');
+  
   if (brand) query = query.ilike('brand', `%${brand}%`);
   if (model) query = query.ilike('model', `%${model}%`);
+  if (city) query = query.eq('city', city);
   if (minPrice) query = query.gte('price', minPrice);
   if (maxPrice) query = query.lte('price', maxPrice);
-  if (city) query = query.eq('city', city);
+  if (minYear) query = query.gte('year', minYear);
+  if (maxYear) query = query.lte('year', maxYear);
   if (fuelType) query = query.eq('fuel_type', fuelType);
   if (transmission) query = query.eq('transmission', transmission);
+  if (color) query = query.ilike('color', `%${color}%`);
   
   const from = (currentPage - 1) * LISTINGS_PER_PAGE;
   const to = from + LISTINGS_PER_PAGE - 1;
@@ -53,7 +71,7 @@ export default async function HomePage({ searchParams }) {
   
   const totalPages = Math.ceil((count || 0) / LISTINGS_PER_PAGE);
   const uniqueValues = await getUniqueFilterValues(supabase);
-  const hasFilters = brand || model || minPrice || maxPrice || city || fuelType || transmission;
+  const hasFilters = brand || model || city || minPrice || maxPrice || minYear || maxYear || fuelType || transmission || color;
 
   return (
     <>
