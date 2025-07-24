@@ -1,9 +1,10 @@
 
-// FAYL: /app/components/SearchFilters.jsx (YENİLƏNMİŞ DİZAYN)
+// AÇIQLAMA: Standart <select> elementləri yeni <CustomSelect> komponenti ilə əvəz edildi.
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useState, useEffect } from 'react'
+import CustomSelect from './CustomSelect.jsx'
 
 export default function SearchFilters({ uniqueValues }) {
   const router = useRouter()
@@ -19,8 +20,6 @@ export default function SearchFilters({ uniqueValues }) {
   const [maxPrice, setMaxPrice] = useState(searchParams.get('maxPrice') || '')
   const [minYear, setMinYear] = useState(searchParams.get('minYear') || '')
   const [maxYear, setMaxYear] = useState(searchParams.get('maxYear') || '')
-  const [fuelType, setFuelType] = useState(searchParams.get('fuelType') || '')
-  const [transmission, setTransmission] = useState(searchParams.get('transmission') || '')
   const [color, setColor] = useState(searchParams.get('color') || '')
 
   useEffect(() => {
@@ -58,8 +57,6 @@ export default function SearchFilters({ uniqueValues }) {
     if (maxPrice) params.set('maxPrice', maxPrice)
     if (minYear) params.set('minYear', minYear)
     if (maxYear) params.set('maxYear', maxYear)
-    if (fuelType) params.set('fuelType', fuelType)
-    if (transmission) params.set('transmission', transmission)
     if (color) params.set('color', color)
     
     router.push(`/?${params.toString()}`)
@@ -69,79 +66,67 @@ export default function SearchFilters({ uniqueValues }) {
       router.push('/')
   }
 
+  // CustomSelect üçün datanı düzgün formata salırıq
+  const brandOptions = uniqueValues.brands.map(b => ({ value: b.id, label: b.name }));
+  const modelOptions = models.map(m => ({ value: m.name, label: m.name }));
+  const cityOptions = uniqueValues.cities.map(c => ({ value: c, label: c }));
+
   return (
     <div className="bg-white p-6 rounded-2xl shadow-lg mb-8 border border-gray-200">
       <form onSubmit={handleSearch} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
-        {/* Marka */}
         <div>
-          <label htmlFor="brand" className="block text-sm font-medium text-gray-600 mb-1">Marka</label>
-          <select id="brand" value={brandId} onChange={(e) => setBrandId(e.target.value)} className="w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 transition">
-            <option value="">Bütün markalar</option>
-            {uniqueValues?.brands?.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-          </select>
+          <label className="block text-sm font-medium text-gray-600 mb-1">Marka</label>
+          <CustomSelect
+            options={brandOptions}
+            value={brandId}
+            onChange={(value) => setBrandId(value)}
+            placeholder="Bütün markalar"
+          />
         </div>
-        {/* Model */}
         <div>
-          <label htmlFor="model" className="block text-sm font-medium text-gray-600 mb-1">Model</label>
-          <select id="model" value={model} onChange={(e) => setModel(e.target.value)} disabled={!brandId || isLoadingModels} className="w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 transition disabled:bg-gray-200">
-            <option value="">Bütün modellər</option>
-            {isLoadingModels ? <option>Yüklənir...</option> : models.map(m => <option key={m.name} value={m.name}>{m.name}</option>)}
-          </select>
+          <label className="block text-sm font-medium text-gray-600 mb-1">Model</label>
+          <CustomSelect
+            options={modelOptions}
+            value={model}
+            onChange={(value) => setModel(value)}
+            placeholder={isLoadingModels ? "Yüklənir..." : "Bütün modellər"}
+            disabled={!brandId || isLoadingModels}
+          />
         </div>
-        {/* Şəhər */}
         <div>
-          <label htmlFor="city" className="block text-sm font-medium text-gray-600 mb-1">Şəhər</label>
-          <select id="city" value={city} onChange={(e) => setCity(e.target.value)} className="w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 transition">
-            <option value="">Bütün şəhərlər</option>
-            {uniqueValues?.cities?.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
+          <label className="block text-sm font-medium text-gray-600 mb-1">Şəhər</label>
+          <CustomSelect
+            options={cityOptions}
+            value={city}
+            onChange={(value) => setCity(value)}
+            placeholder="Bütün şəhərlər"
+          />
         </div>
-        {/* Qiymət aralığı */}
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label htmlFor="min-price" className="block text-sm font-medium text-gray-600 mb-1">Qiymət, min.</label>
-            <input type="number" id="min-price" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} className="w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="0" />
+            <input type="number" id="min-price" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} className="w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-300 rounded-md" placeholder="0" />
           </div>
           <div>
             <label htmlFor="max-price" className="block text-sm font-medium text-gray-600 mb-1">maks.</label>
-            <input type="number" id="max-price" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} className="w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="∞" />
+            <input type="number" id="max-price" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} className="w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-300 rounded-md" placeholder="∞" />
           </div>
         </div>
-        {/* Buraxılış ili aralığı */}
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label htmlFor="min-year" className="block text-sm font-medium text-gray-600 mb-1">İl, min.</label>
-            <input type="number" id="min-year" value={minYear} onChange={(e) => setMinYear(e.target.value)} className="w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="1980" />
+            <input type="number" id="min-year" value={minYear} onChange={(e) => setMinYear(e.target.value)} className="w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-300 rounded-md" placeholder="1980" />
           </div>
           <div>
             <label htmlFor="max-year" className="block text-sm font-medium text-gray-600 mb-1">maks.</label>
-            <input type="number" id="max-year" value={maxYear} onChange={(e) => setMaxYear(e.target.value)} className="w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder={new Date().getFullYear()} />
+            <input type="number" id="max-year" value={maxYear} onChange={(e) => setMaxYear(e.target.value)} className="w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-300 rounded-md" placeholder={new Date().getFullYear()} />
           </div>
         </div>
-        {/* Rəng */}
         <div>
           <label htmlFor="color" className="block text-sm font-medium text-gray-600 mb-1">Rəng</label>
-          <input type="text" id="color" value={color} onChange={(e) => setColor(e.target.value)} className="w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="İstənilən" />
+          <input type="text" id="color" value={color} onChange={(e) => setColor(e.target.value)} className="w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-300 rounded-md" placeholder="İstənilən" />
         </div>
-        {/* Yanacaq növü */}
-        <div>
-          <label htmlFor="fuelType" className="block text-sm font-medium text-gray-600 mb-1">Yanacaq növü</label>
-          <select id="fuelType" value={fuelType} onChange={(e) => setFuelType(e.target.value)} className="w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 transition">
-            <option value="">Hamısı</option>
-            {uniqueValues?.fuelTypes?.map(f => <option key={f} value={f}>{f}</option>)}
-          </select>
-        </div>
-        {/* Sürətlər qutusu */}
-        <div>
-          <label htmlFor="transmission" className="block text-sm font-medium text-gray-600 mb-1">Sürətlər qutusu</label>
-          <select id="transmission" value={transmission} onChange={(e) => setTransmission(e.target.value)} className="w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 transition">
-            <option value="">Hamısı</option>
-            {uniqueValues?.transmissions?.map(t => <option key={t} value={t}>{t}</option>)}
-          </select>
-        </div>
-        
-        {/* Düymələr */}
-        <div className="sm:col-span-2 lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+        <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
            <button type="button" onClick={clearFilters} className="w-full px-4 py-3 text-sm font-semibold text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors">
             Filtri Təmizlə
            </button>
