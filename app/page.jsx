@@ -1,3 +1,5 @@
+// FAYL: /app/page.jsx (YENİLƏNMİŞ)
+// AÇIQLAMA: getUniqueFilterValues funksiyası artıq şəhərləri yeni "cities" cədvəlindən çəkir.
 
 import { createClient } from '../lib/supabase/server'
 import ListingCard from './components/ListingCard.jsx'

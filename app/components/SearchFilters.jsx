@@ -1,6 +1,5 @@
 
-// FAYL: /app/components/SearchFilters.jsx (DƏYİŞMƏZ, LAKİN KONTEKST ÜÇÜN ƏLAVƏ EDİLİB)
-// AÇIQLAMA: Bu fayl artıq yeni məlumat strukturunu dəstəkləyir, dəyişikliyə ehtiyac yoxdur.
+// FAYL: /app/components/SearchFilters.jsx (YENİLƏNMİŞ DİZAYN)
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -72,7 +71,7 @@ export default function SearchFilters({ uniqueValues }) {
 
   return (
     <div className="bg-white p-6 rounded-2xl shadow-lg mb-8 border border-gray-200">
-      <form onSubmit={handleSearch} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
+      <form onSubmit={handleSearch} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
         {/* Marka */}
         <div>
           <label htmlFor="brand" className="block text-sm font-medium text-gray-600 mb-1">Marka</label>
@@ -97,11 +96,6 @@ export default function SearchFilters({ uniqueValues }) {
             {uniqueValues?.cities?.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
-        {/* Rəng */}
-        <div>
-          <label htmlFor="color" className="block text-sm font-medium text-gray-600 mb-1">Rəng</label>
-          <input type="text" id="color" value={color} onChange={(e) => setColor(e.target.value)} className="w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="İstənilən" />
-        </div>
         {/* Qiymət aralığı */}
         <div className="grid grid-cols-2 gap-4">
           <div>
@@ -124,6 +118,11 @@ export default function SearchFilters({ uniqueValues }) {
             <input type="number" id="max-year" value={maxYear} onChange={(e) => setMaxYear(e.target.value)} className="w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder={new Date().getFullYear()} />
           </div>
         </div>
+        {/* Rəng */}
+        <div>
+          <label htmlFor="color" className="block text-sm font-medium text-gray-600 mb-1">Rəng</label>
+          <input type="text" id="color" value={color} onChange={(e) => setColor(e.target.value)} className="w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 transition" placeholder="İstənilən" />
+        </div>
         {/* Yanacaq növü */}
         <div>
           <label htmlFor="fuelType" className="block text-sm font-medium text-gray-600 mb-1">Yanacaq növü</label>
@@ -142,7 +141,7 @@ export default function SearchFilters({ uniqueValues }) {
         </div>
         
         {/* Düymələr */}
-        <div className="lg:col-span-4 grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+        <div className="sm:col-span-2 lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
            <button type="button" onClick={clearFilters} className="w-full px-4 py-3 text-sm font-semibold text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors">
             Filtri Təmizlə
            </button>
