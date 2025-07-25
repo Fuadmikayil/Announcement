@@ -4,6 +4,13 @@ import { createClient } from '../../lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
+const equipmentKeys = [
+    'has_alloy_wheels', 'has_abs', 'has_sunroof', 'has_rain_sensor', 
+    'has_central_locking', 'has_park_assist', 'has_ac', 'has_heated_seats',
+    'has_leather_seats', 'has_xenon_lights', 'has_360_camera', 'has_rear_camera',
+    'has_side_curtains', 'has_ventilated_seats'
+];
+
 export async function createListing(formData) {
   const supabase = createClient()
   
@@ -14,33 +21,36 @@ export async function createListing(formData) {
 
   try {
     const phoneNumber = formData.get('phone_number');
-
     if (phoneNumber) {
         const { error: profileError } = await supabase
             .from('profiles')
             .update({ phone_number: phoneNumber })
             .eq('id', user.id);
-        
-        if (profileError) {
-            throw new Error(`Profil yenilənmədi: ${profileError.message}`);
-        }
+        if (profileError) throw new Error(`Profil yenilənmədi: ${profileError.message}`);
     }
 
     const listingData = {
       user_id: user.id,
       brand: formData.get('brand'),
       model: formData.get('model'),
+      body_type: formData.get('body_type'),
+      city: formData.get('city'),
+      color: formData.get('color'),
       year: parseInt(formData.get('year'), 10),
       price: parseInt(formData.get('price'), 10),
       mileage: parseInt(formData.get('mileage'), 10),
       engine_volume: parseFloat(formData.get('engine_volume')),
       fuel_type: formData.get('fuel_type'),
       transmission: formData.get('transmission'),
-      color: formData.get('color'),
       description: formData.get('description'),
-      city: formData.get('city'),
+      credit: formData.get('credit') === 'on',
+      barter: formData.get('barter') === 'on',
       image_urls: formData.get('image_urls').split(','),
-    }
+    };
+
+    equipmentKeys.forEach(key => {
+        listingData[key] = formData.get(key) === 'on';
+    });
     
     const { error: listingError } = await supabase.from('listings').insert([listingData])
     

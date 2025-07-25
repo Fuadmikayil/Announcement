@@ -1,32 +1,66 @@
+// FAYL: /app/components/SearchFilters.jsx (YENİLƏNMİŞ)
+"use client";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
+import CustomSelect from "./CustomSelect.jsx";
 
-// AÇIQLAMA: Standart <select> elementləri yeni <CustomSelect> komponenti ilə əvəz edildi.
-'use client'
+const equipmentList = [
+  { key: "has_alloy_wheels", label: "Yüngül lehimli disklər" },
+  { key: "has_abs", label: "ABS" },
+  { key: "has_sunroof", label: "Lyuk" },
+  { key: "has_rain_sensor", label: "Yağış sensoru" },
+  { key: "has_central_locking", label: "Mərkəzi qapanma" },
+  { key: "has_park_assist", label: "Park radarı" },
+  { key: "has_ac", label: "Kondisioner" },
+  { key: "has_heated_seats", label: "Oturacaqların isidilməsi" },
+  { key: "has_leather_seats", label: "Dəri salon" },
+  { key: "has_xenon_lights", label: "Ksenon lampalar" },
+  { key: "has_360_camera", label: "360° kamera" },
+  { key: "has_rear_camera", label: "Arxa görüntü kamerası" },
+  { key: "has_side_curtains", label: "Yan pərdələr" },
+  { key: "has_ventilated_seats", label: "Oturacaqların ventilyasiyası" },
+];
+const ToggleButton = ({ isActive, onClick, children }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={`flex-1 px-2 py-1.5 rounded-md text-sm font-medium transition-colors ${
+      isActive
+        ? "bg-[#4F39F6] text-white shadow"
+        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+    }`}
+  >
+    {children}
+  </button>
+);
 
-import { useRouter, useSearchParams } from 'next/navigation'
-import { useState, useEffect } from 'react'
-import CustomSelect from './CustomSelect.jsx'
+export default function SearchFilters({ filterOptions, newTodayCount }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-export default function SearchFilters({ uniqueValues }) {
-  const router = useRouter()
-  const searchParams = useSearchParams()
+  const [brandId, setBrandId] = useState("");
+  const [model, setModel] = useState("");
+  const [city, setCity] = useState("");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [minYear, setMinYear] = useState("");
+  const [maxYear, setMaxYear] = useState("");
+  const [bodyType, setBodyType] = useState("");
+  const [color, setColor] = useState("");
+  const [credit, setCredit] = useState(false);
+  const [barter, setBarter] = useState(false);
+  const [equipment, setEquipment] = useState({});
 
-  const [brandId, setBrandId] = useState(searchParams.get('brandId') || '')
-  const [model, setModel] = useState(searchParams.get('model') || '')
-  const [models, setModels] = useState([])
-  const [isLoadingModels, setIsLoadingModels] = useState(false)
-  
-  const [city, setCity] = useState(searchParams.get('city') || '')
-  const [minPrice, setMinPrice] = useState(searchParams.get('minPrice') || '')
-  const [maxPrice, setMaxPrice] = useState(searchParams.get('maxPrice') || '')
-  const [minYear, setMinYear] = useState(searchParams.get('minYear') || '')
-  const [maxYear, setMaxYear] = useState(searchParams.get('maxYear') || '')
-  const [color, setColor] = useState(searchParams.get('color') || '')
+  const [models, setModels] = useState([]);
+  const [isLoadingModels, setIsLoadingModels] = useState(false);
+  const [showMore, setShowMore] = useState(false);
+  const [condition, setCondition] = useState("Hamısı");
 
   useEffect(() => {
     const fetchModels = async () => {
       if (!brandId) {
         setModels([]);
-        setModel('');
+        setModel("");
         return;
       }
       setIsLoadingModels(true);
@@ -44,100 +78,259 @@ export default function SearchFilters({ uniqueValues }) {
     fetchModels();
   }, [brandId]);
 
+  const handleEquipmentChange = (key) => {
+    setEquipment((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const handleNumericInputChange = (value, setter) => {
+    const numericRegex = /^\d*$/;
+    if (numericRegex.test(value)) {
+      setter(value);
+    }
+  };
+
   const handleSearch = (e) => {
-    e.preventDefault()
-    const params = new URLSearchParams()
-    
-    const selectedBrand = uniqueValues.brands.find(b => b.id === parseInt(brandId, 10));
-    if (selectedBrand) params.set('brand', selectedBrand.name);
-    
-    if (model) params.set('model', model)
-    if (city) params.set('city', city)
-    if (minPrice) params.set('minPrice', minPrice)
-    if (maxPrice) params.set('maxPrice', maxPrice)
-    if (minYear) params.set('minYear', minYear)
-    if (maxYear) params.set('maxYear', maxYear)
-    if (color) params.set('color', color)
-    
-    router.push(`/?${params.toString()}`)
-  }
+    e.preventDefault();
+    const params = new URLSearchParams();
+    const selectedBrand = filterOptions.brands.find(
+      (b) => b.id === parseInt(brandId, 10)
+    );
+    if (selectedBrand) params.set("brand", selectedBrand.name);
+    if (model) params.set("model", model);
+    if (city) params.set("city", city);
+    if (minPrice) params.set("minPrice", minPrice);
+    if (maxPrice) params.set("maxPrice", maxPrice);
+    if (minYear) params.set("minYear", minYear);
+    if (maxYear) params.set("maxYear", maxYear);
+    if (bodyType) params.set("bodyType", bodyType);
+    if (color) params.set("color", color);
+    if (credit) params.set("credit", "true");
+    if (barter) params.set("barter", "true");
+    if (condition === "Yeni") params.set("condition", "new");
+    if (condition === "Sürülmüş") params.set("condition", "used");
+    Object.keys(equipment).forEach((key) => {
+      if (equipment[key]) {
+        params.set(key, "true");
+      }
+    });
+    router.push(`/?${params.toString()}`, { scroll: false });
+  };
 
   const clearFilters = () => {
-      router.push('/')
-  }
+    router.push("/", { scroll: false });
+  };
 
-  // CustomSelect üçün datanı düzgün formata salırıq
-  const brandOptions = uniqueValues.brands.map(b => ({ value: b.id, label: b.name }));
-  const modelOptions = models.map(m => ({ value: m.name, label: m.name }));
-  const cityOptions = uniqueValues.cities.map(c => ({ value: c, label: c }));
+  const brandOptions = filterOptions.brands.map((b) => ({
+    value: b.id,
+    label: b.name,
+  }));
+  const modelOptions = models.map((m) => ({ value: m.name, label: m.name }));
+  const cityOptions = filterOptions.cities.map((c) => ({ value: c, label: c }));
+  const bodyTypeOptions = filterOptions.bodyTypes.map((bt) => ({
+    value: bt,
+    label: bt,
+  }));
+  const colorOptions = filterOptions.colors.map((c) => ({
+    value: c.name,
+    label: c.name,
+    hex: c.hex_code,
+  }));
 
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-lg mb-8 border border-gray-200">
-      <form onSubmit={handleSearch} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-600 mb-1">Marka</label>
+    <div className="bg-white/90 backdrop-blur-sm p-4 rounded-lg shadow-lg border border-gray-200">
+      <form onSubmit={handleSearch} className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <CustomSelect
             options={brandOptions}
             value={brandId}
-            onChange={(value) => setBrandId(value)}
-            placeholder="Bütün markalar"
+            onChange={setBrandId}
+            placeholder="Marka"
           />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-600 mb-1">Model</label>
           <CustomSelect
             options={modelOptions}
             value={model}
-            onChange={(value) => setModel(value)}
-            placeholder={isLoadingModels ? "Yüklənir..." : "Bütün modellər"}
+            onChange={setModel}
+            placeholder={isLoadingModels ? "Yüklənir..." : "Model"}
             disabled={!brandId || isLoadingModels}
           />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-600 mb-1">Şəhər</label>
+          <div className="bg-gray-100 border border-gray-200 rounded-md flex items-center p-1">
+            <ToggleButton
+              isActive={condition === "Hamısı"}
+              onClick={() => setCondition("Hamısı")}
+            >
+              Hamısı
+            </ToggleButton>
+            <ToggleButton
+              isActive={condition === "Yeni"}
+              onClick={() => setCondition("Yeni")}
+            >
+              Yeni
+            </ToggleButton>
+            <ToggleButton
+              isActive={condition === "Sürülmüş"}
+              onClick={() => setCondition("Sürülmüş")}
+            >
+              Sürülmüş
+            </ToggleButton>
+          </div>
           <CustomSelect
             options={cityOptions}
             value={city}
-            onChange={(value) => setCity(value)}
-            placeholder="Bütün şəhərlər"
+            onChange={setCity}
+            placeholder="Şəhər"
           />
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="min-price" className="block text-sm font-medium text-gray-600 mb-1">Qiymət, min.</label>
-            <input type="number" id="min-price" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} className="w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-300 rounded-md" placeholder="0" />
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength="9"
+              value={minPrice}
+              onChange={(e) =>
+                handleNumericInputChange(e.target.value, setMinPrice)
+              }
+              className="w-full px-3 py-2 text-gray-900 bg-gray-100 border border-gray-200 rounded-md"
+              placeholder="Qiymət, min."
+            />
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength="9"
+              value={maxPrice}
+              onChange={(e) =>
+                handleNumericInputChange(e.target.value, setMaxPrice)
+              }
+              className="w-full px-3 py-2 text-gray-900 bg-gray-100 border border-gray-200 rounded-md"
+              placeholder="maks."
+            />
           </div>
-          <div>
-            <label htmlFor="max-price" className="block text-sm font-medium text-gray-600 mb-1">maks.</label>
-            <input type="number" id="max-price" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} className="w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-300 rounded-md" placeholder="∞" />
+          <div className="flex items-center justify-around p-2 border border-gray-200 rounded-md bg-gray-100 h-full">
+            <span className="text-sm font-semibold text-gray-700">AZN</span>
+            <div className="border-l border-gray-300 h-full mx-2"></div>
+            <label className="flex items-center text-sm cursor-pointer text-gray-700">
+              <input
+                type="checkbox"
+                checked={credit}
+                onChange={(e) => setCredit(e.target.checked)}
+                className="mr-1.5 h-4 w-4 rounded border-gray-300 text-[#4F39F6] focus:ring-[#4F39F6]"
+              />
+              Kredit
+            </label>
+            <div className="border-l border-gray-300 h-full mx-2"></div>
+            <label className="flex items-center text-sm cursor-pointer text-gray-700">
+              <input
+                type="checkbox"
+                checked={barter}
+                onChange={(e) => setBarter(e.target.checked)}
+                className="mr-1.5 h-4 w-4 rounded border-gray-300 text-[#4F39F6] focus:ring-[#4F39F6]"
+              />
+              Barter
+            </label>
+          </div>
+          <CustomSelect
+            options={bodyTypeOptions}
+            value={bodyType}
+            onChange={setBodyType}
+            placeholder="Ban növü"
+          />
+          <div className="flex items-center gap-2">
+            <input
+              type="text" 
+              inputMode="numeric" 
+              pattern="[0-9]*" 
+              maxLength="4" 
+              value={minYear}
+              onChange={(e) =>
+                handleNumericInputChange(e.target.value, setMinYear)
+              }
+              className="w-full px-3 py-2 text-gray-900 bg-gray-100 border border-gray-200 rounded-md"
+              placeholder="İl, min."
+            />
+            <input
+              type="text" 
+              inputMode="numeric" 
+              pattern="[0-9]*" 
+              maxLength="4" 
+              value={maxYear}
+              onChange={(e) =>
+                handleNumericInputChange(e.target.value, setMaxYear)
+              }
+              className="w-full px-3 py-2 text-gray-900 bg-gray-100 border border-gray-200 rounded-md"
+              placeholder="maks."
+            />
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="min-year" className="block text-sm font-medium text-gray-600 mb-1">İl, min.</label>
-            <input type="number" id="min-year" value={minYear} onChange={(e) => setMinYear(e.target.value)} className="w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-300 rounded-md" placeholder="1980" />
+
+        {showMore && (
+          <div className="border-t border-gray-200 pt-4 space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <CustomSelect
+                options={colorOptions}
+                value={color}
+                onChange={setColor}
+                placeholder="Rəng"
+              />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-gray-800 mb-2">
+                Avtomobilin təchizatı
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                {equipmentList.map((item) => (
+                  <label
+                    key={item.key}
+                    className="flex items-center text-sm text-gray-700 cursor-pointer p-2 rounded-md hover:bg-gray-100"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={!!equipment[item.key]}
+                      onChange={() => handleEquipmentChange(item.key)}
+                      className="h-4 w-4 rounded border-gray-300 text-[#4F39F6] focus:ring-[#4F39F6]"
+                    />
+                    <span className="ml-2">{item.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
           </div>
-          <div>
-            <label htmlFor="max-year" className="block text-sm font-medium text-gray-600 mb-1">maks.</label>
-            <input type="number" id="max-year" value={maxYear} onChange={(e) => setMaxYear(e.target.value)} className="w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-300 rounded-md" placeholder={new Date().getFullYear()} />
+        )}
+
+        <div className="flex justify-between items-center pt-2">
+          <span className="text-sm text-gray-500">
+            Bu gün:{" "}
+            <span className="font-semibold text-gray-700">
+              {newTodayCount} yeni elan
+            </span>
+          </span>
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="text-sm text-gray-600 hover:text-red-600 font-medium"
+            >
+              Sıfırla
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowMore(!showMore)}
+              className="text-sm font-medium text-[#4F39F6] hover:underline"
+            >
+              {showMore ? "Daha az filtr" : "Daha çox filtr"}
+            </button>
+            <button
+              type="submit"
+              style={{ backgroundColor: "#4F39F6" }}
+              className="px-8 py-2.5 text-sm font-semibold text-white rounded-md hover:opacity-90 transition-opacity"
+            >
+              Elanları göstər
+            </button>
           </div>
-        </div>
-        <div>
-          <label htmlFor="color" className="block text-sm font-medium text-gray-600 mb-1">Rəng</label>
-          <input type="text" id="color" value={color} onChange={(e) => setColor(e.target.value)} className="w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-300 rounded-md" placeholder="İstənilən" />
-        </div>
-        <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-           <button type="button" onClick={clearFilters} className="w-full px-4 py-3 text-sm font-semibold text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors">
-            Filtri Təmizlə
-           </button>
-           <button type="submit" className="w-full flex items-center justify-center px-4 py-3 text-sm font-semibold text-white bg-indigo-600 rounded-md shadow-sm hover:bg-indigo-700 transition-colors">
-            <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-            </svg>
-            Axtar
-           </button>
         </div>
       </form>
     </div>
-  )
+  );
 }

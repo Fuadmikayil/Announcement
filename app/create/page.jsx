@@ -1,8 +1,25 @@
 
-// FAYL: /app/create/page.jsx (YENİLƏNMİŞ)
+
+//app/create/page.jsx
 import { createClient } from '../../lib/supabase/server'
 import { redirect } from 'next/navigation'
 import ListingForm from './ListingForm.jsx'
+
+async function getFormOptions(supabase) {
+    const [brandsRes, citiesRes, bodyTypesRes, colorsRes] = await Promise.all([
+        supabase.from('brands').select('id, name').order('name', { ascending: true }),
+        supabase.from('cities').select('name').order('name', { ascending: true }),
+        supabase.from('body_types').select('name').order('name', { ascending: true }),
+        supabase.from('colors').select('name, hex_code').order('id'),
+    ]);
+
+    return {
+        brands: brandsRes.data || [],
+        cities: citiesRes.data?.map(c => c.name) || [],
+        bodyTypes: bodyTypesRes.data?.map(bt => bt.name) || [],
+        colors: colorsRes.data || [],
+    };
+}
 
 export default async function CreateListingPage({ searchParams }) {
   const supabase = createClient()
@@ -18,6 +35,8 @@ export default async function CreateListingPage({ searchParams }) {
     .eq('id', user.id)
     .single()
 
+  const formOptions = await getFormOptions(supabase);
+
   return (
     <div className="bg-gray-100 py-12">
         <div className="container mx-auto px-4">
@@ -31,7 +50,7 @@ export default async function CreateListingPage({ searchParams }) {
                         {searchParams.message.replace(/_/g, ' ')}
                     </div>
                 )}
-                <ListingForm userProfile={profile} />
+                <ListingForm userProfile={profile} formOptions={formOptions} />
             </div>
         </div>
     </div>
