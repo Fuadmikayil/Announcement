@@ -1,4 +1,4 @@
-// FAYL: /app/components/SearchFilters.jsx (YENİLƏNMİŞ)
+// FAYL: /app/components/SearchFilters.jsx (DÜZƏLDİLMİŞ)
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -36,7 +36,6 @@ const ToggleButton = ({ isActive, onClick, children }) => (
 
 export default function SearchFilters({ filterOptions, newTodayCount }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const [brandId, setBrandId] = useState("");
   const [model, setModel] = useState("");
@@ -117,6 +116,21 @@ export default function SearchFilters({ filterOptions, newTodayCount }) {
   };
 
   const clearFilters = () => {
+    setBrandId("");
+    setModel("");
+    setCity("");
+    setMinPrice("");
+    setMaxPrice("");
+    setMinYear("");
+    setMaxYear("");
+    setBodyType("");
+    setColor("");
+    setCredit(false);
+    setBarter(false);
+    setEquipment({});
+    setCondition("Hamısı");
+    setModels([]); 
+
     router.push("/", { scroll: false });
   };
 
@@ -239,10 +253,10 @@ export default function SearchFilters({ filterOptions, newTodayCount }) {
           />
           <div className="flex items-center gap-2">
             <input
-              type="text" 
-              inputMode="numeric" 
-              pattern="[0-9]*" 
-              maxLength="4" 
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength="4"
               value={minYear}
               onChange={(e) =>
                 handleNumericInputChange(e.target.value, setMinYear)
@@ -251,10 +265,10 @@ export default function SearchFilters({ filterOptions, newTodayCount }) {
               placeholder="İl, min."
             />
             <input
-              type="text" 
-              inputMode="numeric" 
-              pattern="[0-9]*" 
-              maxLength="4" 
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength="4"
               value={maxYear}
               onChange={(e) =>
                 handleNumericInputChange(e.target.value, setMaxYear)
