@@ -1,4 +1,3 @@
-
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Image from 'next/image'
@@ -28,11 +27,13 @@ export default async function ProfilePage() {
     redirect('/login')
   }
 
-  // İstifadəçinin profil məlumatlarını və bütün elanlarını eyni anda çək
+  // 1. İstifadəçinin profil məlumatlarını və bütün elanlarını eyni anda çək
+  //    'phone_number' sahəsini select sorğusuna əlavə etdik.
   const { data: profile, error } = await supabase
     .from('profiles')
     .select(`
       full_name,
+      phone_number, 
       listings (
         *,
         created_at
@@ -54,6 +55,10 @@ export default async function ProfilePage() {
       <div className="bg-white p-6 rounded-lg shadow-md mb-8">
         <h1 className="text-3xl font-bold text-gray-800">{profile.full_name}</h1>
         <p className="text-gray-500">{user.email}</p>
+        {/* 2. Telefon nömrəsini göstərmək üçün yeni element əlavə etdik. */}
+        {profile.phone_number && (
+          <p className="text-gray-500 mt-1">{profile.phone_number}</p>
+        )}
       </div>
 
       <h2 className="text-2xl font-bold mb-6">Mənim Elanlarım</h2>
@@ -71,7 +76,7 @@ export default async function ProfilePage() {
             <div key={listing.id} className="bg-white p-4 rounded-lg shadow-md flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-4">
                 <Image
-                  src={listing.image_urls?.[0] || '[https://placehold.co/600x400/e2e8f0/e2e8f0?text=No+Image](https://placehold.co/600x400/e2e8f0/e2e8f0?text=No+Image)'}
+                  src={listing.image_urls?.[0] || 'https://placehold.co/600x400/e2e8f0/e2e8f0?text=No+Image'}
                   alt={`${listing.brand} ${listing.model}`}
                   width={100}
                   height={75}
@@ -87,7 +92,6 @@ export default async function ProfilePage() {
               </div>
               <div className="flex items-center gap-4">
                 {getStatusBadge(listing.status)}
-                {/* YENİ ƏLAVƏ OLUNAN LİNK */}
                 <Link href={`/create/${listing.id}/edit`} className="px-3 py-1 text-sm font-medium text-blue-600 hover:text-white hover:bg-blue-600 border border-blue-300 rounded-md transition-colors">
                   Redaktə et
                 </Link>

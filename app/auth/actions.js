@@ -9,6 +9,7 @@ export async function login(formData) {
   const data = {
     email: formData.get('email'),
     password: formData.get('password'),
+    // phone_number: formData.get('phoneNumber'), // <<< BU SƏTİRİ SİLİN. Login üçün lazım deyil.
   };
 
   const { error } = await supabase.auth.signInWithPassword(data);
@@ -25,13 +26,17 @@ export async function login(formData) {
   return redirect('/');
 }
 
+// signup funksiyanız DÜZGÜNDÜR, dəyişikliyə ehtiyac yoxdur.
 export async function signup(formData) {
   const supabase = createClient();
   const data = {
     email: formData.get('email'),
     password: formData.get('password'),
     options: {
-      data: { full_name: formData.get('fullName') }
+      data: {
+        full_name: formData.get('fullName'),
+        phone_number: formData.get('phoneNumber')
+      }
     }
   };
 
@@ -48,11 +53,10 @@ export async function signup(formData) {
   return redirect('/login?message=Qeydiyyat_ugurludur_emailinizi_tesdiqleyin');
 }
 
+// Digər funksiyalar olduğu kimi qalır...
 export async function signOut() {
     const supabase = createClient();
     await supabase.auth.signOut();
-    
-    // DÜZƏLİŞ: Çıxış etdikdən sonra da cache-i təmizləyirik
     revalidatePath('/', 'layout');
     return redirect('/login');
 }

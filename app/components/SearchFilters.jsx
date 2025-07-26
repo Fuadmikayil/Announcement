@@ -313,14 +313,14 @@ export default function SearchFilters({ filterOptions, newTodayCount }) {
           </div>
         )}
 
-        <div className="flex justify-between items-center pt-2">
+        <div className="flex flex-col-reverse sm:flex-row justify-between items-center pt-2">
           <span className="text-sm text-gray-500">
             Bu gün:{" "}
             <span className="font-semibold text-gray-700">
               {newTodayCount} yeni elan
             </span>
           </span>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col mb-4 sm:flex-row  items-center gap-4">
             <button
               type="button"
               onClick={clearFilters}

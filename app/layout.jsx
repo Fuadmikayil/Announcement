@@ -1,4 +1,3 @@
-
 import { Inter } from 'next/font/google'
 import './globals.css'
 import Header from './components/Header.jsx'
@@ -9,7 +8,9 @@ export const metadata = { title: 'TurboClone', description: 'Avtomobil elanları
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="az" className="scroll-smooth">
+    // The suppressHydrationWarning prop is added here to prevent errors
+    // from browser extensions that modify the HTML.
+    <html lang="az" className="scroll-smooth" suppressHydrationWarning>
       <body className={`${inter.className} bg-gray-100 flex flex-col min-h-screen`}>
         <Header />
         <main className="flex-grow">{children}</main>
