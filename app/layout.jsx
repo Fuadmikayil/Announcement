@@ -4,7 +4,7 @@ import Header from './components/Header.jsx'
 import Footer from './components/Footer.jsx'
 
 const inter = Inter({ subsets: ['latin'] })
-export const metadata = { title: 'TurboClone', description: 'Avtomobil elanları saytı' }
+export const metadata = { title: 'AvtoAz', description: 'Avtomobil elanları saytı' }
 
 export default function RootLayout({ children }) {
   return (

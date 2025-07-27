@@ -1,10 +1,12 @@
 'use client'
 
 import { useState, useEffect, useTransition } from 'react'
-import { useSearchParams, useParams, notFound, useRouter } from 'next/navigation'
+import { useSearchParams, useParams, notFound } from 'next/navigation'
 import { createClient } from '../../../../lib/supabase/client'
 import Image from 'next/image'
 import { updateListing, deleteImage } from './actions'
+
+
 
 // --- SVG Icons ---
 const Trash2 = (props) => (
@@ -22,38 +24,48 @@ const X = (props) => (
       <path d="M18 6 6 18" /><path d="m6 6 12 12" />
     </svg>
 );
-
 export default function EditListingPage() {
   const params = useParams();
   const supabase = createClient();
   const searchParams = useSearchParams();
-  const router = useRouter();
 
   const [listing, setListing] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   
+  // DƏYİŞİKLİK: Səlahiyyət xətası üçün yeni state
+  const [authError, setAuthError] = useState(null);
+
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState(searchParams.get('message') || '');
   const [newImages, setNewImages] = useState([]);
   const [previews, setPreviews] = useState([]);
+  
   const [formData, setFormData] = useState(null);
 
   useEffect(() => {
     const fetchInitialData = async () => {
+        setLoading(true);
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) { window.location.href = '/login'; return; }
         
         const listingId = params.id;
-        const { data: listingData } = await supabase.from('listings').select('*').eq('id', listingId).single();
-        if (!listingData) { notFound(); return; }
+        if (!listingId) { notFound(); return; } // Eger ID yoxdursa 404 goster
+
+        const { data: listingData, error: listingError } = await supabase.from('listings').select('*').eq('id', listingId).single();
+        if (listingError || !listingData) { notFound(); return; }
         
         const { data: profileData } = await supabase.from('profiles').select('role').eq('id', user.id).single();
         
         const isUserAdmin = profileData?.role === 'admin';
         const isUserOwner = listingData.user_id === user.id;
 
-        if (!isUserAdmin && !isUserOwner) { notFound(); return; }
+        // DƏYİŞİKLİK: `notFound()` əvəzinə xəta mesajı state-ini təyin edirik
+        if (!isUserAdmin && !isUserOwner) {
+            setAuthError("Sizin bu əməliyyatı yerinə yetirməyə icazəniz yoxdur.");
+            setLoading(false); // Yükləməni dayandırırıq ki, xəta mesajı görünsün
+            return; 
+        }
         
         setListing(listingData);
         setFormData(listingData);
@@ -94,22 +106,26 @@ export default function EditListingPage() {
       startTransition(() => updateListing(submissionFormData));
   };
 
-  // === DÜZƏLİŞ BURADADIR: Şəkil silmək üçün yeni funksiya ===
-  const handleDeleteImage = async (imageUrl) => {
-    const data = new FormData();
-    data.append('listingId', listing.id);
-    data.append('imageUrl', imageUrl);
-
-    startTransition(async () => {
-        await deleteImage(data);
-        // Səhifəni yeniləyərək silinmiş şəklin yox olmasını təmin edirik
-        router.refresh();
-    });
-  };
-
-  if (loading || !formData) {
-    return <div className="container mx-auto max-w-4xl py-12 px-4 text-center">Yüklənir...</div>;
+  if (loading) {
+    return <div className="container mx-auto max-w-4xl py-12 px-4 text-center text-gray-600">Yüklənir...</div>;
   }
+  
+  // DƏYİŞİKLİK: Səlahiyyət xətası varsa, formanı göstərmək əvəzinə mesajı göstəririk
+  if (authError) {
+    return (
+        <div className="container mx-auto max-w-4xl py-12 px-4 text-center">
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative" role="alert">
+                <strong className="font-bold">Xəta! </strong>
+                <span className="block sm:inline">{authError}</span>
+            </div>
+        </div>
+    );
+  }
+
+  if (!listing || !formData) {
+      return null; // və ya başqa bir yükləmə/xəta vəziyyəti
+  }
+
 
   return (
     <div className="container mx-auto max-w-4xl py-12 px-4">
@@ -125,17 +141,7 @@ export default function EditListingPage() {
                     {listing.image_urls.map((url) => (
                         <div key={url} className="relative group">
                             <Image src={url} alt="Elan şəkli" width={200} height={150} className="rounded-md object-cover w-full h-32" />
-                            
-                            {/* === DÜZƏLİŞ BURADADIR: <form> əvəzinə <button> və onClick istifadə edirik === */}
-                            <button 
-                                type="button" 
-                                onClick={() => handleDeleteImage(url)}
-                                disabled={isPending}
-                                title="Şəkli sil" 
-                                className="absolute top-1 right-1 p-1.5 bg-red-600/80 hover:bg-red-700 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity disabled:bg-gray-400">
-                                <Trash2 size={16} />
-                            </button>
-
+                            <form action={deleteImage}><input type="hidden" name="listingId" value={listing.id} /><input type="hidden" name="imageUrl" value={url} /><button type="submit" title="Şəkli sil" className="absolute top-1 right-1 p-1.5 bg-red-600/80 hover:bg-red-700 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={16} /></button></form>
                         </div>
                     ))}
                 </div>

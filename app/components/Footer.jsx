@@ -7,7 +7,7 @@ export default function Footer() {
       <div className="container mx-auto px-6 py-8">
         <div className="flex flex-col items-center text-center">
           <Link href="/" className="text-2xl font-bold text-white">
-            TurboClone
+          AvtoAZ
           </Link>
           <div className="flex space-x-6 mt-4">
             <Link href="/" className="hover:text-indigo-400 transition-colors">Ana Səhifə</Link>
@@ -17,7 +17,7 @@ export default function Footer() {
             <Link href="#" className="hover:text-indigo-400 transition-colors">Əlaqə</Link>
           </div>
           <p className="mt-6 text-gray-400 text-sm">
-            © {new Date().getFullYear()} TurboClone. Bütün hüquqlar qorunur.
+            © {new Date().getFullYear()} AvtoAZ. Bütün hüquqlar qorunur.
           </p>
         </div>
       </div>

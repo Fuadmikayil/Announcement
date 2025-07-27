@@ -1,17 +1,17 @@
-// FAYL: /app/components/Header.jsx (YENİLƏNMİŞ VƏ RESPONSİV)
-// AÇIQLAMA: Bu versiya, mobil cihazlar üçün "hamburger" menyusu əlavə edilərək tam responsiv hala gətirildi.
 'use client'
 
-import { createClient } from '../../lib/supabase/client' // 'use client' olduğu üçün client-i istifadə edirik
+import { createClient } from '../../lib/supabase/client'
 import Link from 'next/link'
 import { signOut } from '../auth/actions'
 import { useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation' // Route dəyişimini izləmək üçün
 
 export default function Header() {
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const pathname = usePathname(); // Route hər dəyişəndə trigger olur
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -25,23 +25,24 @@ export default function Header() {
           .select('role')
           .eq('id', user.id)
           .single();
-        
-        if (profile?.role === 'admin') {
-          setIsAdmin(true);
-        }
+
+        setIsAdmin(profile?.role === 'admin');
+      } else {
+        setIsAdmin(false);
       }
+
       setLoading(false);
     };
 
     fetchUser();
-  }, []);
+  }, [pathname]); // Route dəyişdikcə təkrar fetch edir
 
 
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
       <nav className="container mx-auto px-4 sm:px-6 py-3">
         <div className="flex justify-between items-center">
-          <Link href="/" className="text-2xl font-bold text-indigo-600">TurboClone</Link>
+          <Link href="/" className="text-2xl font-bold text-indigo-600">AvtoAZ</Link>
           
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-4">
