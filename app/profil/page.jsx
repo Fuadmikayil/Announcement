@@ -83,7 +83,7 @@ export default async function ProfilePage() {
                   className="rounded-md object-cover"
                 />
                 <div>
-                  <h3 className="font-semibold">{listing.brand} {listing.model}</h3>
+                  <h3 className="font-semibold text-black">{listing.brand} {listing.model}</h3>
                   <p className="text-sm text-gray-600">{listing.price} AZN</p>
                   <p className="text-xs text-gray-500">
                     {new Date(listing.created_at).toLocaleDateString('az-AZ')}
