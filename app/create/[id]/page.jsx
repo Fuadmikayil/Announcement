@@ -106,7 +106,7 @@ export default async function ListingDetailPage({ params }) {
                 {isOwner && (
                   <div className="mt-6 border-t pt-4">
                     <Link 
-                      href={`/elanlar/${listing.id}/edit`} 
+                      href={`/create/${listing.id}/edit`} 
                       className="w-full inline-block text-center px-6 py-3 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
                     >
                       Elanı Redaktə Et
