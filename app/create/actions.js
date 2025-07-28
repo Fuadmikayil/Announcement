@@ -34,6 +34,7 @@ export async function createListing(formData) {
       brand: formData.get('brand'),
       model: formData.get('model'),
       body_type: formData.get('body_type'),
+      is_new: formData.get('is_new'),
       city: formData.get('city'),
       color: formData.get('color'),
       year: parseInt(formData.get('year'), 10),
