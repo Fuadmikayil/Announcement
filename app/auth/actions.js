@@ -9,7 +9,6 @@ export async function login(formData) {
   const data = {
     email: formData.get('email'),
     password: formData.get('password'),
-    // phone_number: formData.get('phoneNumber'), // <<< BU SƏTİRİ SİLİN. Login üçün lazım deyil.
   };
 
   const { error } = await supabase.auth.signInWithPassword(data);

@@ -246,8 +246,8 @@ export default function ListingForm({ userProfile, formOptions }) {
         <FormField label="Qiymət" className="md:col-span-2">
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
                 <input type="number" name="price" required value={price} onChange={(e) => setPrice(e.target.value)} min="1" onKeyDown={preventInvalidNumberInput} className="w-full max-w-xs px-3 py-2 text-gray-900 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
-                <label className="flex items-center"><input type="checkbox" name="credit" checked={credit} onChange={(e) => setCredit(e.target.checked)} className="h-4 w-4 rounded mr-2 text-indigo-600 focus:ring-indigo-500" /> <span className="text-sm text-gray-700">Kredit</span></label>
-                <label className="flex items-center"><input type="checkbox" name="barter" checked={barter} onChange={(e) => setBarter(e.target.checked)} className="h-4 w-4 rounded mr-2 text-indigo-600 focus:ring-indigo-500" /> <span className="text-sm text-gray-700">Barter</span></label>
+                <label className="flex items-center"><input type="checkbox" name="credit" checked={credit} onChange={(e) => setCredit(e.target.value)} className="h-4 w-4 rounded mr-2 text-indigo-600 focus:ring-indigo-500" /> <span className="text-sm text-gray-700">Kredit</span></label>
+                <label className="flex items-center"><input type="checkbox" name="barter" checked={barter} onChange={(e) => setBarter(e.target.value)} className="h-4 w-4 rounded mr-2 text-indigo-600 focus:ring-indigo-500" /> <span className="text-sm text-gray-700">Barter</span></label>
             </div>
         </FormField>
       </FormSection>
