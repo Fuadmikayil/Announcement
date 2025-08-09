@@ -41,6 +41,8 @@ export default function EditListingPage() {
   const [formOptions, setFormOptions] = useState({ brands: [], cities: [], bodyTypes: [], colors: [] });
   const [models, setModels] = useState([]); // Ensure models is initialized as an array
   const [isLoadingModels, setIsLoadingModels] = useState(false);
+  // NEW: signed URLs for existing images (preview only)
+  const [signedExistingImages, setSignedExistingImages] = useState([]);
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -91,6 +93,30 @@ export default function EditListingPage() {
         ...listingData,
         brand: brandsRes.data.find(b => b.name === listingData.brand)?.id || '',
       });
+
+      // NEW: sign existing image URLs for preview
+      if (Array.isArray(listingData.image_urls) && listingData.image_urls.length > 0) {
+        try {
+          const signed = await Promise.all(
+            listingData.image_urls.map(async (u) => {
+              try {
+                const path = new URL(u).pathname.split('/listings-images/')[1]
+                if (!path) return u
+                const { data: signed } = await supabase.storage.from('listings-images').createSignedUrl(path, 3600)
+                return signed?.signedUrl || u
+              } catch {
+                return u
+              }
+            })
+          )
+          setSignedExistingImages(signed)
+        } catch {
+          setSignedExistingImages(listingData.image_urls)
+        }
+      } else {
+        setSignedExistingImages([])
+      }
+
       setIsAdmin(isUserAdmin);
       setLoading(false);
     };
@@ -231,13 +257,20 @@ export default function EditListingPage() {
               <div className="mt-3 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
                 {listing.image_urls.map((url, i) => (
                   <div key={i} className="relative group">
-                    <Image src={url} alt={`Image ${i + 1}`} width={150} height={150} className="rounded-md object-cover w-full h-28" />
+                    <Image
+                      src={signedExistingImages[i] || url}
+                      alt={`Image ${i + 1}`}
+                      width={150}
+                      height={150}
+                      className="rounded-md object-cover w-full h-28"
+                    />
                     <form action={deleteImage} className="absolute top-1 right-1">
                       <input type="hidden" name="listingId" value={listing.id} />
+                      {/* Keep original URL for delete action */}
                       <input type="hidden" name="imageUrl" value={url} />
                       <button
                         type="submit"
-                      title="Sil"
+                        title="Sil"
                         className="bg-black bg-opacity-60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100"
                       >
                         <Trash2 width="16" height="16" />

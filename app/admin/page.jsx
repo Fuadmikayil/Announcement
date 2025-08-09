@@ -80,7 +80,9 @@ const formatDate = (dateString) => {
 }
 
 export default async function AdminPage({ searchParams }) {
-  const message = searchParams.message;
+  const params = typeof searchParams?.then === 'function' ? await searchParams : searchParams
+  const message = params?.message
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) { redirect('/login') }
@@ -98,6 +100,24 @@ export default async function AdminPage({ searchParams }) {
 
   const { data: listings, error } = await supabase.from('listings').select('*').order('created_at', { ascending: false })
   if (error) { console.error("Elanları çəkərkən xəta:", error); return <p>Elanları yükləmək mümkün olmadı.</p> }
+
+  // NEW: pre-sign cover image URLs
+  const placeholder = 'https://placehold.co/600x400/e2e8f0/e2e8f0?text=...'
+  const coverMap = new Map()
+  await Promise.all((listings || []).map(async (l) => {
+    const raw = l.image_urls?.[0]
+    let out = placeholder
+    if (raw) {
+      try {
+        const path = new URL(raw).pathname.split('/listings-images/')[1]
+        if (path) {
+          const { data: signed } = await supabase.storage.from('listings-images').createSignedUrl(path, 3600)
+          if (signed?.signedUrl) out = signed.signedUrl
+        }
+      } catch {}
+    }
+    coverMap.set(l.id, out)
+  }))
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -137,7 +157,7 @@ export default async function AdminPage({ searchParams }) {
                                 <div className="flex items-center">
                                     <div className="flex-shrink-0 h-12 w-16">
                                         <Image
-                                            src={listing.image_urls?.[0] || 'https://placehold.co/600x400/e2e8f0/e2e8f0?text=...'}
+                                            src={coverMap.get(listing.id) || placeholder}
                                             alt={`${listing.brand} ${listing.model}`}
                                             width={64}
                                             height={48}

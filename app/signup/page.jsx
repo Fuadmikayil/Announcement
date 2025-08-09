@@ -2,8 +2,9 @@ import { signup } from '../auth/actions'
 import Link from 'next/link'
 import { SubmitButton } from '../components/SubmitButton.jsx'
 
-export default function SignupPage({ searchParams }) {
-  const message = searchParams.message;
+export default async function SignupPage({ searchParams }) {
+  const params = typeof searchParams?.then === 'function' ? await searchParams : searchParams
+  const message = params?.message
   const isError = message && (message.includes('ugursuz') || message.includes('kecib'));
 
   return (

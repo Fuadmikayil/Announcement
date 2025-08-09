@@ -44,6 +44,23 @@ export default async function ListingDetailPage({ params }) {
     notFound();
   }
   
+  // NEW: sign all gallery images
+  let signedImages = Array.isArray(listing.image_urls) ? listing.image_urls : []
+  if (signedImages.length > 0) {
+    signedImages = await Promise.all(
+      signedImages.map(async (u) => {
+        try {
+          const path = new URL(u).pathname.split('/listings-images/')[1]
+          if (!path) return u
+          const { data: signed } = await supabase.storage.from('listings-images').createSignedUrl(path, 3600)
+          return signed?.signedUrl || u
+        } catch {
+          return u
+        }
+      })
+    )
+  }
+
   const formattedPrice = new Intl.NumberFormat('az-AZ').format(listing.price);
 
   const specs = [
@@ -69,7 +86,7 @@ export default async function ListingDetailPage({ params }) {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 lg:gap-8">
           <div className="lg:col-span-2">
-            <ImageGallery images={listing.image_urls} alt={`${listing.brand} ${listing.model}`} />
+            <ImageGallery images={signedImages} alt={`${listing.brand} ${listing.model}`} />
             
             <div className="mt-8 bg-white p-6 rounded-lg shadow-md">
               <h2 className="text-2xl font-bold mb-4 text-gray-700 border-b pb-2">Əlavə Məlumat</h2>

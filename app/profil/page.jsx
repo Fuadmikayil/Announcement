@@ -50,6 +50,24 @@ export default async function ProfilePage() {
   // Elanları yaradılma tarixinə görə sırala
   const sortedListings = profile.listings.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
+  // NEW: pre-sign cover image URLs
+  const placeholder = 'https://placehold.co/600x400/e2e8f0/e2e8f0?text=No+Image'
+  const coverMap = new Map()
+  await Promise.all(sortedListings.map(async (l) => {
+    const raw = l.image_urls?.[0]
+    let out = placeholder
+    if (raw) {
+      try {
+        const path = new URL(raw).pathname.split('/listings-images/')[1]
+        if (path) {
+          const { data: signed } = await supabase.storage.from('listings-images').createSignedUrl(path, 3600)
+          if (signed?.signedUrl) out = signed.signedUrl
+        }
+      } catch {}
+    }
+    coverMap.set(l.id, out)
+  }))
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="bg-white p-6 rounded-lg shadow-md mb-8">
@@ -76,7 +94,7 @@ export default async function ProfilePage() {
             <div key={listing.id} className="bg-white p-4 rounded-lg shadow-md flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-4">
                 <Image
-                  src={listing.image_urls?.[0] || 'https://placehold.co/600x400/e2e8f0/e2e8f0?text=No+Image'}
+                  src={coverMap.get(listing.id) || placeholder}
                   alt={`${listing.brand} ${listing.model}`}
                   width={100}
                   height={75}

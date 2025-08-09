@@ -5,8 +5,9 @@ import { login, signInWithGoogle } from '../auth/actions'
 import Link from 'next/link'
 import { SubmitButton } from '../components/SubmitButton.jsx'
 
-export default function LoginPage({ searchParams }) {
-  const message = searchParams.message;
+export default async function LoginPage({ searchParams }) {
+  const params = typeof searchParams?.then === 'function' ? await searchParams : searchParams
+  const message = params?.message
   
   const isError = message && (message.includes('yanlisdir') || message.includes('mumkun_olmadi') || message.includes('ugursuz_oldu'));
   const isSuccess = message && message.includes('ugurludur');

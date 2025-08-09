@@ -21,6 +21,10 @@ async function getFormOptions(supabase) {
 
 export default async function CreateListingPage({ searchParams }) {
   const supabase = await createClient()
+  // Next.js 15: searchParams can be a Promise
+  const params = typeof searchParams?.then === 'function' ? await searchParams : searchParams
+  const message = params?.message
+
   const { data: { user } } = await supabase.auth.getUser()
   
   if (!user) {
@@ -33,7 +37,7 @@ export default async function CreateListingPage({ searchParams }) {
     .eq('id', user.id)
     .single()
 
-  const formOptions = await getFormOptions(supabase);
+  const formOptions = await getFormOptions(supabase)
 
   return (
     <div className="bg-gray-100 py-12">
@@ -43,9 +47,9 @@ export default async function CreateListingPage({ searchParams }) {
                     <h1 className="text-4xl font-bold text-gray-800">Yeni Elan Yerləşdir</h1>
                     <p className="text-gray-500 mt-2">Avtomobiliniz üçün alıcı tapmağın ən asan yolu.</p>
                 </div>
-                {searchParams.message && (
+                {message && (
                     <div className="mb-6 p-4 text-center text-sm text-red-700 bg-red-100 rounded-lg">
-                        {searchParams.message.replace(/_/g, ' ')}
+                        {message.replace(/_/g, ' ')}
                     </div>
                 )}
                 <ListingForm userProfile={profile} formOptions={formOptions} />

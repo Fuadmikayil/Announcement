@@ -11,6 +11,22 @@ export default async function ListingCard({ listing }) {
     const { data: favorite } = await supabase.from('favorites').select('listing_id').eq('user_id', user.id).eq('listing_id', listing.id).single(); 
     if (favorite) isFavorited = true 
   }
+
+  // NEW: sign cover image URL to avoid 400 from storage
+  const placeholder = 'https://placehold.co/600x400/e2e8f0/e2e8f0?text=No+Image'
+  let coverUrl = listing.image_urls?.[0] || placeholder
+  if (coverUrl && coverUrl !== placeholder) {
+    try {
+      const path = new URL(coverUrl).pathname.split('/listings-images/')[1]
+      if (path) {
+        const { data: signed } = await supabase.storage
+          .from('listings-images')
+          .createSignedUrl(path, 3600)
+        if (signed?.signedUrl) coverUrl = signed.signedUrl
+      }
+    } catch {}
+  }
+
   const formattedPrice = new Intl.NumberFormat('az-AZ').format(listing.price)
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden group transition-shadow duration-300 hover:shadow-xl">
@@ -18,7 +34,7 @@ export default async function ListingCard({ listing }) {
         <Link href={`/create/${listing.id}`} className="block">
             <div className="relative w-full h-48">
                 <ListingImage
-                    src={listing.image_urls?.[0] || 'https://placehold.co/600x400/e2e8f0/e2e8f0?text=No+Image'}
+                    src={coverUrl}
                     alt={`${listing.brand} ${listing.model}`}
                     fill
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
