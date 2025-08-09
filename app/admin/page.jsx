@@ -81,7 +81,7 @@ const formatDate = (dateString) => {
 
 export default async function AdminPage({ searchParams }) {
   const message = searchParams.message;
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) { redirect('/login') }
 

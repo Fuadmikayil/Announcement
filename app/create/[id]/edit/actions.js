@@ -7,7 +7,7 @@ export async function updateListing(formData) {
   const listingId = formData.get('listingId');
 
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: authData, error: authError } = await supabase.auth.getUser();
     if (authError || !authData?.user) {
       console.error("Authentication Error:", authError?.message || "User not authenticated");
@@ -137,7 +137,7 @@ export async function deleteImage(formData) {
       throw new Error("delete_params_missing");
     }
 
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: authData } = await supabase.auth.getUser();
     if (!authData?.user) {
       console.error("Error: User not authenticated");

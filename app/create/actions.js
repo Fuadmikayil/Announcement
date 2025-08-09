@@ -1,4 +1,3 @@
-
 'use server'
 import { createClient } from '../../lib/supabase/server'
 import { revalidatePath } from 'next/cache'
@@ -12,7 +11,7 @@ const equipmentKeys = [
 ];
 
 export async function createListing(formData) {
-  const supabase = createClient()
+  const supabase = await createClient()
   
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) { 

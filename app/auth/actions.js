@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 
 export async function login(formData) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const data = {
     email: formData.get('email'),
     password: formData.get('password'),
@@ -27,7 +27,7 @@ export async function login(formData) {
 
 // signup funksiyanız DÜZGÜNDÜR, dəyişikliyə ehtiyac yoxdur.
 export async function signup(formData) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const data = {
     email: formData.get('email'),
     password: formData.get('password'),
@@ -54,14 +54,14 @@ export async function signup(formData) {
 
 // Digər funksiyalar olduğu kimi qalır...
 export async function signOut() {
-    const supabase = createClient();
+    const supabase = await createClient();
     await supabase.auth.signOut();
     revalidatePath('/', 'layout');
     return redirect('/login');
 }
 
 export async function signInWithGoogle() {
-    const supabase = createClient();
+    const supabase = await createClient();
     const origin = headers().get('origin');
     
     const { data, error } = await supabase.auth.signInWithOAuth({

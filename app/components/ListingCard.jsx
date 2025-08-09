@@ -1,11 +1,10 @@
-
 import Link from 'next/link'
 import { createClient } from '../../lib/supabase/server'
 import FavoriteButton from './FavoriteButton.jsx'
 import ListingImage from './ListingImage.jsx'
 
 export default async function ListingCard({ listing }) {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   let isFavorited = false
   if (user) { 

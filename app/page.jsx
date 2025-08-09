@@ -57,7 +57,7 @@ export default async function HomePage({ searchParams }) {
   const condition = params['condition'] ?? '';
 
   // Supabase client yaradılır
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Sorğu yaradılır
   let query = supabase.from('listings').select('*', { count: 'exact' }).eq('status', 'approved');

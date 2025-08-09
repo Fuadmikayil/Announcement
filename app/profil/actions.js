@@ -1,4 +1,3 @@
-
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
@@ -6,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
 export async function deleteListing(formData) {
-  const supabase = createClient()
+  const supabase = await createClient()
   const listingId = formData.get('listingId')
 
   if (!listingId) {

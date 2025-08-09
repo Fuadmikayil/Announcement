@@ -1,4 +1,3 @@
-
 // FAYL: /app/admin/actions.js (YENİLƏNMİŞ)
 'use server'
 import { createClient } from '../../lib/supabase/server'
@@ -7,7 +6,7 @@ import { redirect } from 'next/navigation'
 
 export async function approveListing(formData) {
   const listingId = formData.get('listingId')
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) { return redirect('/login') }
@@ -37,7 +36,7 @@ export async function approveListing(formData) {
 
 export async function rejectListing(formData) {
   const listingId = formData.get('listingId')
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) { return redirect('/login') }

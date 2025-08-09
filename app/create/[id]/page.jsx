@@ -1,4 +1,3 @@
-
 // FAYL: /app/elanlar/[id]/page.jsx (YENİLƏNMİŞ)
 // AÇIQLAMA: SVG ikonlarındakı səhv xmlns atributu düzəldildi.
 import { createClient } from '../../../lib/supabase/server'
@@ -30,7 +29,7 @@ const equipmentList = [
 
 
 export default async function ListingDetailPage({ params }) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { data: listing, error } = await supabase
     .from('listings')

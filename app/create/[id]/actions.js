@@ -1,4 +1,3 @@
-
 // FAYL: /app/profil/edit/[id]/actions.js (YENİ FAYL)
 'use server'
 
@@ -8,7 +7,7 @@ import { redirect } from 'next/navigation'
 
 export async function updateListing(formData) {
   const listingId = formData.get('listingId')
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {

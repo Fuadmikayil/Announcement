@@ -1,5 +1,3 @@
-
-
 //app/create/page.jsx
 import { createClient } from '../../lib/supabase/server'
 import { redirect } from 'next/navigation'
@@ -22,7 +20,7 @@ async function getFormOptions(supabase) {
 }
 
 export default async function CreateListingPage({ searchParams }) {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   
   if (!user) {
