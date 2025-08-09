@@ -4,13 +4,12 @@ import { useState, useEffect, useTransition } from 'react'
 import { useSearchParams, useParams, notFound } from 'next/navigation'
 import { createClient } from '../../../../lib/supabase/client'
 import Image from 'next/image'
+import CustomSelect from '../../../components/CustomSelect.jsx'
 import { updateListing, deleteImage } from './actions'
-
-
 
 // --- SVG Icons ---
 const Trash2 = (props) => (
-  <svg {...props} xmlns="http://www.w.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M3 6h18" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /><line x1="10" x2="10" y1="11" y2="17" /><line x1="14" x2="14" y1="11" y2="17" />
   </svg>
 );
@@ -20,69 +19,126 @@ const UploadCloud = (props) => (
   </svg>
 );
 const X = (props) => (
-    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M18 6 6 18" /><path d="m6 6 12 12" />
-    </svg>
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+  </svg>
 );
+
 export default function EditListingPage() {
   const params = useParams();
   const supabase = createClient();
   const searchParams = useSearchParams();
 
   const [listing, setListing] = useState(null);
+  const [formData, setFormData] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
-  
-  // DƏYİŞİKLİK: Səlahiyyət xətası üçün yeni state
   const [authError, setAuthError] = useState(null);
-
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState(searchParams.get('message') || '');
   const [newImages, setNewImages] = useState([]);
   const [previews, setPreviews] = useState([]);
-  
-  const [formData, setFormData] = useState(null);
+  const [formOptions, setFormOptions] = useState({ brands: [], cities: [], bodyTypes: [], colors: [] });
+  const [models, setModels] = useState([]); // Ensure models is initialized as an array
+  const [isLoadingModels, setIsLoadingModels] = useState(false);
 
   useEffect(() => {
     const fetchInitialData = async () => {
-        setLoading(true);
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) { window.location.href = '/login'; return; }
-        
-        const listingId = params.id;
-        if (!listingId) { notFound(); return; } // Eger ID yoxdursa 404 goster
+      setLoading(true);
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        console.error("Authentication Error:", authError?.message || "User not authenticated");
+        window.location.href = '/login';
+        return;
+      }
 
-        const { data: listingData, error: listingError } = await supabase.from('listings').select('*').eq('id', listingId).single();
-        if (listingError || !listingData) { notFound(); return; }
-        
-        const { data: profileData } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-        
-        const isUserAdmin = profileData?.role === 'admin';
-        const isUserOwner = listingData.user_id === user.id;
+      const listingId = params.id;
+      if (!listingId) { notFound(); return; }
 
-        // DƏYİŞİKLİK: `notFound()` əvəzinə xəta mesajı state-ini təyin edirik
-        if (!isUserAdmin && !isUserOwner) {
-            setAuthError("Sizin bu əməliyyatı yerinə yetirməyə icazəniz yoxdur.");
-            setLoading(false); // Yükləməni dayandırırıq ki, xəta mesajı görünsün
-            return; 
-        }
-        
-        setListing(listingData);
-        setFormData(listingData);
-        setIsAdmin(isUserAdmin);
+      const { data: listingData, error: listingError } = await supabase.from('listings').select('*').eq('id', listingId).single();
+      if (listingError || !listingData) {
+        console.error("Error fetching listing data:", listingError?.message || "Listing not found");
+        notFound();
+        return;
+      }
+
+      const { data: profileData } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+      const isUserAdmin = profileData?.role === 'admin';
+      const isUserOwner = listingData.user_id === user.id;
+
+      if (!isUserAdmin && !isUserOwner) {
+        setAuthError("Sizin bu əməliyyatı yerinə yetirməyə icazəniz yoxdur.");
         setLoading(false);
+        return;
+      }
+
+      const [brandsRes, citiesRes, bodyTypesRes, colorsRes] = await Promise.all([
+        supabase.from('brands').select('id, name').order('name', { ascending: true }),
+        supabase.from('cities').select('name').order('name', { ascending: true }),
+        supabase.from('body_types').select('name').order('name', { ascending: true }),
+        supabase.from('colors').select('name, hex_code').order('id'),
+      ]);
+
+      setFormOptions({
+        brands: brandsRes.data || [],
+        cities: citiesRes.data?.map(c => c.name) || [],
+        bodyTypes: bodyTypesRes.data?.map(bt => bt.name) || [],
+        colors: colorsRes.data || [],
+      });
+
+      setListing(listingData);
+      setFormData({
+        ...listingData,
+        brand: brandsRes.data.find(b => b.name === listingData.brand)?.id || '',
+      });
+      setIsAdmin(isUserAdmin);
+      setLoading(false);
     };
 
     fetchInitialData();
   }, [params.id, supabase]);
 
   useEffect(() => {
+    const fetchModels = async () => {
+      if (!formData?.brand) {
+        setModels([]); // Reset models to an empty array if no brand is selected
+        return;
+      }
+      setIsLoadingModels(true);
+      try {
+        const response = await fetch(`/api/models?brand_id=${formData.brand}`);
+        const data = await response.json();
+        setModels(Array.isArray(data) ? data : []); // Ensure data is an array
+      } catch (error) {
+        console.error("Error fetching models:", error.message);
+        setModels([]); // Reset models to an empty array on error
+      } finally {
+        setIsLoadingModels(false);
+      }
+    };
+    fetchModels();
+  }, [formData?.brand]);
+
+  useEffect(() => {
     return () => previews.forEach(url => URL.revokeObjectURL(url));
   }, [previews]);
-  
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => {
+      const updatedFormData = { ...prev, [name]: value };
+      if (name === 'model') {
+        console.log("Model updated in formData:", updatedFormData.model); // Log the updated model value
+      }
+      return updatedFormData;
+    });
+  };
+
+  const handleModelChange = (value) => {
+    setFormData(prev => {
+      console.log("Model selected:", value); // Log the selected model value
+      return { ...prev, model: value };
+    });
   };
 
   const handleFileChange = (e) => {
@@ -96,82 +152,181 @@ export default function EditListingPage() {
     setNewImages(current => current.filter((_, i) => i !== index));
     setPreviews(current => current.filter((_, i) => i !== index));
   };
-  
+
   const handleSubmit = async (event) => {
-      event.preventDefault();
-      const submissionFormData = new FormData(event.currentTarget);
-      newImages.forEach(file => {
-          submissionFormData.append('new_images', file);
-      });
-      startTransition(() => updateListing(submissionFormData));
+    event.preventDefault();
+    const submissionFormData = new FormData(event.currentTarget);
+
+    // Ensure fields from CustomSelects are submitted
+    const selectedBrandName =
+      (formOptions.brands.find(b => b.id === formData.brand)?.name) || '';
+
+    submissionFormData.set('brand', selectedBrandName);
+    submissionFormData.set('model', formData.model || '');
+    submissionFormData.set('body_type', formData.body_type || '');
+    submissionFormData.set('color', formData.color || '');
+    submissionFormData.set('city', formData.city || '');
+
+    newImages.forEach(file => {
+      submissionFormData.append('new_images', file);
+    });
+    startTransition(async () => {
+      const { error } = await updateListing(submissionFormData);
+      if (!error) {
+        setMessage('Dəyişikliklər uğurla yadda saxlanıldı.');
+        setNewImages([]);
+        setPreviews([]);
+      } else {
+        console.error("Error updating listing:", error.message);
+        setMessage('Xəta baş verdi. Zəhmət olmasa yenidən cəhd edin.');
+      }
+    });
   };
 
   if (loading) {
     return <div className="container mx-auto max-w-4xl py-12 px-4 text-center text-gray-600">Yüklənir...</div>;
   }
-  
-  // DƏYİŞİKLİK: Səlahiyyət xətası varsa, formanı göstərmək əvəzinə mesajı göstəririk
+
   if (authError) {
     return (
-        <div className="container mx-auto max-w-4xl py-12 px-4 text-center">
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative" role="alert">
-                <strong className="font-bold">Xəta! </strong>
-                <span className="block sm:inline">{authError}</span>
-            </div>
+      <div className="container mx-auto max-w-4xl py-12 px-4 text-center">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative" role="alert">
+          <strong className="font-bold">Xəta! </strong>
+          <span className="block sm:inline">{authError}</span>
         </div>
+      </div>
     );
   }
 
   if (!listing || !formData) {
-      return null; // və ya başqa bir yükləmə/xəta vəziyyəti
+    return null;
   }
 
+  const brandOptions = formOptions.brands.map(b => ({ value: b.id, label: b.name }));
+  const modelOptions = models.map(m => ({ value: m.name, label: m.name }));
+  const cityOptions = formOptions.cities.map(c => ({ value: c, label: c }));
+  const bodyTypeOptions = formOptions.bodyTypes.map(bt => ({ value: bt, label: bt }));
+  const colorOptions = formOptions.colors.map(c => ({ value: c.name, label: c.name, hex: c.hex_code }));
 
   return (
     <div className="container mx-auto max-w-4xl py-12 px-4">
       <div className="bg-white p-8 rounded-lg shadow-lg">
         <h1 className="text-3xl font-bold text-gray-800 mb-6">Elanı Redaktə Et</h1>
-        
-        {message && <p className="mb-4 text-center p-2 rounded-md bg-gray-100 text-gray-700">{message}</p>}
 
-        <div className="mb-8">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Mövcud Şəkillər</h2>
-            {listing.image_urls && listing.image_urls.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                    {listing.image_urls.map((url) => (
-                        <div key={url} className="relative group">
-                            <Image src={url} alt="Elan şəkli" width={200} height={150} className="rounded-md object-cover w-full h-32" />
-                            <form action={deleteImage}><input type="hidden" name="listingId" value={listing.id} /><input type="hidden" name="imageUrl" value={url} /><button type="submit" title="Şəkli sil" className="absolute top-1 right-1 p-1.5 bg-red-600/80 hover:bg-red-700 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={16} /></button></form>
-                        </div>
-                    ))}
-                </div>
-            ) : <p className="text-gray-500">Heç bir şəkil yoxdur.</p>}
-        </div>
+        {message && <p className="mb-4 text-center p-2 rounded-md bg-gray-100 text-gray-700">{message}</p>}
 
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <input type="hidden" name="listingId" value={listing.id} />
+          {/* Hidden inputs to ensure CustomSelect values are included in FormData */}
+          <input type="hidden" name="brand" value={formOptions.brands.find(b => b.id === formData.brand)?.name || ''} />
+          <input type="hidden" name="model" value={formData.model || ''} />
+          <input type="hidden" name="body_type" value={formData.body_type || ''} />
+          <input type="hidden" name="color" value={formData.color || ''} />
+          <input type="hidden" name="city" value={formData.city || ''} />
+
+          {/* Mövcud şəkillər */}
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Yeni Şəkillər Əlavə Et</label>
-            <label htmlFor="new_images_input" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100"><UploadCloud className="w-8 h-8 text-gray-400 mb-2" /><span className="text-sm font-semibold text-gray-600">Şəkil seçin</span><input type="file" name="new_images_input" id="new_images_input" multiple onChange={handleFileChange} accept="image/png, image/jpeg, image/webp" className="sr-only"/></label>
+            <label className="block text-sm font-medium text-gray-700">Mövcud Şəkillər</label>
+            {Array.isArray(listing.image_urls) && listing.image_urls.length > 0 ? (
+              <div className="mt-3 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
+                {listing.image_urls.map((url, i) => (
+                  <div key={i} className="relative group">
+                    <Image src={url} alt={`Image ${i + 1}`} width={150} height={150} className="rounded-md object-cover w-full h-28" />
+                    <form action={deleteImage} className="absolute top-1 right-1">
+                      <input type="hidden" name="listingId" value={listing.id} />
+                      <input type="hidden" name="imageUrl" value={url} />
+                      <button
+                        type="submit"
+                      title="Sil"
+                        className="bg-black bg-opacity-60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100"
+                      >
+                        <Trash2 width="16" height="16" />
+                      </button>
+                    </form>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-2 text-sm text-gray-500">Mövcud şəkil yoxdur.</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Marka</label>
+            <CustomSelect options={brandOptions} value={formData.brand} onChange={(value) => setFormData(prev => ({ ...prev, brand: value, model: '' }))} placeholder="Marka seçin" />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Model</label>
+            <CustomSelect
+              options={modelOptions}
+              value={formData.model}
+              onChange={handleModelChange}
+              placeholder={isLoadingModels ? "Yüklənir..." : "Model seçin"}
+              disabled={!formData.brand || isLoadingModels}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Ban növü</label>
+            <CustomSelect options={bodyTypeOptions} value={formData.body_type} onChange={(value) => setFormData(prev => ({ ...prev, body_type: value }))} placeholder="Ban növü seçin" />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Rəng</label>
+            <CustomSelect options={colorOptions} value={formData.color} onChange={(value) => setFormData(prev => ({ ...prev, color: value }))} placeholder="Rəng seçin" />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Şəhər</label>
+            <CustomSelect options={cityOptions} value={formData.city} onChange={(value) => setFormData(prev => ({ ...prev, city: value }))} placeholder="Şəhər seçin" />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Qiymət</label>
+            <input type="number" name="price" value={formData.price} onChange={handleInputChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900" />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Yürüş</label>
+            <input type="number" name="mileage" value={formData.mileage} onChange={handleInputChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900" />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Mühərrik həcmi</label>
+            <input type="number" name="engine_volume" value={formData.engine_volume} onChange={handleInputChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900" />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Buraxılış ili</label>
+            <input type="number" name="year" value={formData.year} onChange={handleInputChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900" />
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700">Əlavə Məlumat</label>
+            <textarea name="description" rows="4" value={formData.description} onChange={handleInputChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900"></textarea>
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700">Yeni Şəkillər Əlavə Et</label>
+            <label htmlFor="new_images_input" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+              <UploadCloud className="w-8 h-8 text-gray-400 mb-2" />
+              <span className="text-sm font-semibold text-gray-600">Şəkil seçin</span>
+              <input type="file" name="new_images_input" id="new_images_input" multiple onChange={handleFileChange} accept="image/png, image/jpeg, image/webp" className="sr-only" />
+            </label>
             {previews.length > 0 && (
               <div className="mt-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
-                  {previews.map((src, i) => (
-                      <div key={i} className="relative group"><Image src={src} alt={`Preview ${i}`} width={150} height={150} className="rounded-md object-cover w-full h-28" /><button type="button" onClick={() => handleRemoveNewImage(i)} className="absolute top-1 right-1 bg-black bg-opacity-60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100"><X size={16} /></button></div>
-                  ))}
+                {previews.map((src, i) => (
+                  <div key={i} className="relative group">
+                    <Image src={src} alt={`Preview ${i}`} width={150} height={150} className="rounded-md object-cover w-full h-28" />
+                    <button type="button" onClick={() => handleRemoveNewImage(i)} className="absolute top-1 right-1 bg-black bg-opacity-60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100">
+                      <X size={16} />
+                    </button>
+                  </div>
+                ))}
               </div>
             )}
           </div>
-          <div className="md:col-span-2"><hr /></div>
-
-          <div className="md:col-span-2"><label htmlFor="brand" className="block text-sm font-medium text-gray-700">Marka</label><input type="text" name="brand" id="brand" required value={formData.brand} onChange={handleInputChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900" /></div>
-          <div><label htmlFor="model" className="block text-sm font-medium text-gray-700">Model</label><input type="text" name="model" id="model" required value={formData.model} onChange={handleInputChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900" /></div>
-          <div><label htmlFor="year" className="block text-sm font-medium text-gray-700">Buraxılış İli</label><input type="number" name="year" id="year" required value={formData.year} onChange={handleInputChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900" /></div>
-          <div><label htmlFor="price" className="block text-sm font-medium text-gray-700">Qiymət (AZN)</label><input type="number" name="price" id="price" required value={formData.price} onChange={handleInputChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900" /></div>
-          <div><label htmlFor="mileage" className="block text-sm font-medium text-gray-700">Yürüş (km)</label><input type="number" name="mileage" id="mileage" required value={formData.mileage} onChange={handleInputChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900" /></div>
-          <div><label htmlFor="engine_volume" className="block text-sm font-medium text-gray-700">Mühərrikin Həcmi</label><input type="number" step="0.1" name="engine_volume" id="engine_volume" required value={formData.engine_volume} onChange={handleInputChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900" /></div>
-          <div><label htmlFor="color" className="block text-sm font-medium text-gray-700">Rəng</label><input type="text" name="color" id="color" required value={formData.color} onChange={handleInputChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900" /></div>
-          <div><label htmlFor="city" className="block text-sm font-medium text-gray-700">Şəhər</label><input type="text" name="city" id="city" required value={formData.city} onChange={handleInputChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900" /></div>
-          <div className="md:col-span-2"><label htmlFor="description" className="block text-sm font-medium text-gray-700">Əlavə Məlumat</label><textarea name="description" id="description" rows="4" value={formData.description} onChange={handleInputChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-gray-900"></textarea></div>
 
           {isAdmin && (
             <div className="md:col-span-2">
@@ -183,10 +338,14 @@ export default function EditListingPage() {
               </select>
             </div>
           )}
-          
-          <div className="md:col-span-2"><button type="submit" disabled={isPending} className="w-full inline-flex justify-center py-3 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 disabled:cursor-not-allowed">{isPending ? 'Yadda saxlanılır...' : 'Dəyişiklikləri Yadda Saxla'}</button></div>
+
+          <div className="md:col-span-2">
+            <button type="submit" disabled={isPending} className="w-full inline-flex justify-center py-3 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 disabled:cursor-not-allowed">
+              {isPending ? 'Yadda saxlanılır...' : 'Dəyişiklikləri Yadda Saxla'}
+            </button>
+          </div>
         </form>
       </div>
     </div>
-  )
+  );
 }
