@@ -77,12 +77,14 @@
   .tilt-3d:hover { transform: rotateX(8deg) rotateY(-8deg) translateZ(14px) scale(1.01); box-shadow: var(--shadow-deep); }
   .tilt-3d:hover .parallax { transform: translateZ(26px) scale(1.05); }
   .tilt-3d:hover .shine-layer { opacity: .9; }
+  /* Subtle parallax bump for a richer tilt depth */
+  .tilt-3d:hover .parallax { transform: translateZ(28px) scale(1.07); }
 }
 
 /* Prefer reduced motion: disable heavy animations/transforms */
 @media (prefers-reduced-motion: reduce) {
   .animate-hero-zoom, .fade-in-up, .btn-shine::after, .skeleton, .parallax-blob,
-  .bg-animated::before, .bg-animated::after, .fx-aurora, .fx-stars { animation: none !important; }
+  .bg-animated::before, .bg-animated::after, .fx-aurora, .fx-stars, .shine-sweep { animation: none !important; }
   .tilt, .tilt-3d, .hover-lift, .card-3d { transition: none !important; transform: none !important; box-shadow: none !important; }
 }
 
@@ -243,6 +245,66 @@
     radial-gradient(1.5px 1.5px at 220px 200px, rgba(255,255,255,.40), transparent 45%);
   animation: starDrift 120s linear infinite, starsTwinkle 4.6s ease-in-out infinite alternate;
 }
+
+/* Sweep shine overlay for listing cards (scoped to home page) */
+@keyframes sweepShine {
+  0% { transform: translateX(-125%) rotate(20deg); opacity: 0; }
+  20% { opacity: .85; }
+  100% { transform: translateX(135%) rotate(20deg); opacity: 0; }
+}
+.shine-sweep {
+  position: absolute;
+  inset: -10%;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(115deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.55) 50%, rgba(255,255,255,0) 100%);
+  filter: blur(1px);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+.home-listings .group:hover .shine-sweep {
+  animation: sweepShine 1.2s ease;
+}
+
+/* Premium card glow ring (only visible on hover) */
+.card-frame { position: relative; }
+.card-frame::before {
+  content: "";
+  position: absolute;
+  inset: -10px;               /* expand outward */
+  border-radius: inherit;
+  background: conic-gradient(
+    from 180deg,
+    rgba(79,57,246,.0),
+    rgba(124,58,237,.35),
+    rgba(236,72,153,.25),
+    rgba(79,57,246,.35),
+    rgba(79,57,246,.0)
+  );
+  filter: blur(18px) saturate(1.05);
+  opacity: 0;
+  transform: scale(.98);
+  transition: opacity .35s ease, transform .35s ease;
+  pointer-events: none;
+  z-index: 0;
+  /* Show the glow outside the card edges only */
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  padding: 12px;
+}
+.group:hover .card-frame::before { opacity: .28; transform: scale(1); }
+
+/* Image spotlight that follows the cursor */
+.has-spotlight { position: relative; }
+.img-spotlight {
+  position: absolute; inset: 0; border-radius: inherit;
+  pointer-events: none; opacity: 0;
+  transition: opacity .2s ease;
+  mix-blend-mode: screen; /* gentle light blend */
+  will-change: background, opacity;
+}
+.has-spotlight:hover .img-spotlight { opacity: .75; }
 
 /* Animations */
 @keyframes orbsFloat {

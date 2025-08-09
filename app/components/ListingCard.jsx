@@ -31,7 +31,7 @@ export default async function ListingCard({ listing }) {
   return (
     <div className="perspective-1000">
       <div
-        className="bg-white rounded-lg border border-gray-100/60 shadow-md overflow-hidden group transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl fade-in-up card-3d tilt-3d depth-shadow"
+        className="bg-white rounded-lg border border-gray-100/60 shadow-md overflow-hidden group transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl fade-in-up card-3d tilt-3d depth-shadow card-frame"
       >
         <div className="relative">
           <Link href={`/create/${listing.id}`} className="block">
@@ -43,6 +43,8 @@ export default async function ListingCard({ listing }) {
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                 className="parallax object-cover transform-gpu"
               />
+              {/* Sweeping shine overlay (home page scoped via .home-listings) */}
+              <div className="shine-sweep"></div>
               {/* shine overlay */}
               <div className="shine-layer"></div>
             </div>
