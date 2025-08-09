@@ -234,7 +234,7 @@ export default function ListingForm({ userProfile, formOptions }) {
         
         <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-600 mb-1.5">Vəziyyəti</label>
-            <div className="flex rounded-lg border p-1 bg-gray-50 max-w-xs">
+            <div className="flex rounded-lg gap-1 bg-gray-50 max-w-xs">
                 <button type="button" onClick={() => setIsNew(false)} className={`w-1/2 py-2 text-sm rounded-md transition-colors ${!isNew ? 'bg-indigo-600 text-white shadow' : 'bg-transparent text-gray-700 hover:bg-gray-200'}`}>Sürülmüş</button>
                 <button type="button" onClick={() => setIsNew(true)} className={`w-1/2 py-2 text-sm rounded-md transition-colors ${isNew ? 'bg-indigo-600 text-white shadow' : 'bg-transparent text-gray-700 hover:bg-gray-200'}`}>Yeni</button>
             </div>

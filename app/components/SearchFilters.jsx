@@ -20,15 +20,16 @@ const equipmentList = [
   { key: "has_side_curtains", label: "Yan pərdələr" },
   { key: "has_ventilated_seats", label: "Oturacaqların ventilyasiyası" },
 ];
+
 const ToggleButton = ({ isActive, onClick, children }) => (
   <button
     type="button"
     onClick={onClick}
-    className={`flex-1 px-2 py-1.5 rounded-md text-sm font-medium transition-colors ${
+    className={`flex-1 px-2 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
       isActive
-        ? "bg-[#4F39F6] text-white shadow"
-        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-    }`}
+        ? "bg-gradient-to-r from-[#4F39F6] to-[#6A5AF9] text-white shadow-md ring-1 ring-[#5B4CF6]/50"
+        : "bg-white/70 text-gray-700 hover:bg-gray-200"
+    } focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#4F39F6] active:scale-[0.98]`}
   >
     {children}
   </button>
@@ -129,7 +130,7 @@ export default function SearchFilters({ filterOptions, newTodayCount }) {
     setBarter(false);
     setEquipment({});
     setCondition("Hamısı");
-    setModels([]); 
+    setModels([]);
 
     router.push("/", { scroll: false });
   };
@@ -151,7 +152,7 @@ export default function SearchFilters({ filterOptions, newTodayCount }) {
   }));
 
   return (
-    <div className="glass gradient-border p-4 rounded-xl shadow-2xl border border-white/20 fade-in-up">
+    <div className="glass gradient-border p-4 md:p-5 rounded-2xl shadow-xl border border-white/20 backdrop-blur-xl bg-gradient-to-br from-white/80 to-white/50 dark:from-gray-900/60 dark:to-gray-800/40 ring-1 ring-black/5 transition-shadow hover:shadow-2xl">
       <form onSubmit={handleSearch} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <CustomSelect
@@ -167,7 +168,7 @@ export default function SearchFilters({ filterOptions, newTodayCount }) {
             placeholder={isLoadingModels ? "Yüklənir..." : "Model"}
             disabled={!brandId || isLoadingModels}
           />
-          <div className="bg-gray-100 border border-gray-200 rounded-md flex items-center p-1">
+          <div className="bg-white/70 border border-gray-200 rounded-md ring-1 ring-black/5 flex items-center p-1">
             <ToggleButton
               isActive={condition === "Hamısı"}
               onClick={() => setCondition("Hamısı")}
@@ -206,7 +207,7 @@ export default function SearchFilters({ filterOptions, newTodayCount }) {
               onChange={(e) =>
                 handleNumericInputChange(e.target.value, setMinPrice)
               }
-              className="w-full px-3 py-2 text-gray-900 bg-gray-100 border border-gray-200 rounded-md"
+              className="w-full px-3 py-2.5 text-gray-900 bg-white/70 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4F39F6] focus:border-[#4F39F6] placeholder:text-gray-400 shadow-sm"
               placeholder="Qiymət, min."
             />
             <input
@@ -218,11 +219,11 @@ export default function SearchFilters({ filterOptions, newTodayCount }) {
               onChange={(e) =>
                 handleNumericInputChange(e.target.value, setMaxPrice)
               }
-              className="w-full px-3 py-2 text-gray-900 bg-gray-100 border border-gray-200 rounded-md"
+              className="w-full px-3 py-2.5 text-gray-900 bg-white/70 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4F39F6] focus:border-[#4F39F6] placeholder:text-gray-400 shadow-sm"
               placeholder="maks."
             />
           </div>
-          <div className="flex items-center justify-around p-2 border border-gray-200 rounded-md bg-gray-100 h-full">
+          <div className="flex items-center justify-around p-2 border border-gray-200 rounded-lg bg-white/70 h-full ring-1 ring-black/5">
             <span className="text-sm font-semibold text-gray-700">AZN</span>
             <div className="border-l border-gray-300 h-full mx-2"></div>
             <label className="flex items-center text-sm cursor-pointer text-gray-700">
@@ -230,7 +231,7 @@ export default function SearchFilters({ filterOptions, newTodayCount }) {
                 type="checkbox"
                 checked={credit}
                 onChange={(e) => setCredit(e.target.checked)}
-                className="mr-1.5 h-4 w-4 rounded border-gray-300 text-[#4F39F6] focus:ring-[#4F39F6]"
+                className="mr-1.5 h-4 w-4 rounded border-gray-300 text-[#4F39F6] focus:ring-[#4F39F6] accent-[#4F39F6]"
               />
               Kredit
             </label>
@@ -240,7 +241,7 @@ export default function SearchFilters({ filterOptions, newTodayCount }) {
                 type="checkbox"
                 checked={barter}
                 onChange={(e) => setBarter(e.target.checked)}
-                className="mr-1.5 h-4 w-4 rounded border-gray-300 text-[#4F39F6] focus:ring-[#4F39F6]"
+                className="mr-1.5 h-4 w-4 rounded border-gray-300 text-[#4F39F6] focus:ring-[#4F39F6] accent-[#4F39F6]"
               />
               Barter
             </label>
@@ -261,7 +262,7 @@ export default function SearchFilters({ filterOptions, newTodayCount }) {
               onChange={(e) =>
                 handleNumericInputChange(e.target.value, setMinYear)
               }
-              className="w-full px-3 py-2 text-gray-900 bg-gray-100 border border-gray-200 rounded-md"
+              className="w-full px-3 py-2.5 text-gray-900 bg-white/70 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4F39F6] focus:border-[#4F39F6] placeholder:text-gray-400 shadow-sm"
               placeholder="İl, min."
             />
             <input
@@ -273,14 +274,14 @@ export default function SearchFilters({ filterOptions, newTodayCount }) {
               onChange={(e) =>
                 handleNumericInputChange(e.target.value, setMaxYear)
               }
-              className="w-full px-3 py-2 text-gray-900 bg-gray-100 border border-gray-200 rounded-md"
+              className="w-full px-3 py-2.5 text-gray-900 bg-white/70 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4F39F6] focus:border-[#4F39F6] placeholder:text-gray-400 shadow-sm"
               placeholder="maks."
             />
           </div>
         </div>
 
         {showMore && (
-          <div className="border-t border-gray-200 pt-4 space-y-4">
+          <div className="border-t border-gray-200 pt-4 space-y-4 transition-all">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <CustomSelect
                 options={colorOptions}
@@ -297,13 +298,17 @@ export default function SearchFilters({ filterOptions, newTodayCount }) {
                 {equipmentList.map((item) => (
                   <label
                     key={item.key}
-                    className="flex items-center text-sm text-gray-700 cursor-pointer p-2 rounded-md hover:bg-gray-100"
+                    className={`flex items-center text-sm cursor-pointer p-2 rounded-lg border transition-all duration-150 ${
+                      !!equipment[item.key]
+                        ? "bg-[#F2F0FF] border-[#4F39F6] text-[#4F39F6] shadow-sm"
+                        : "bg-white/70 border-gray-200 text-gray-700 hover:bg-gray-100"
+                    }`}
                   >
                     <input
                       type="checkbox"
                       checked={!!equipment[item.key]}
                       onChange={() => handleEquipmentChange(item.key)}
-                      className="h-4 w-4 rounded border-gray-300 text-[#4F39F6] focus:ring-[#4F39F6]"
+                      className="h-4 w-4 rounded border-gray-300 text-[#4F39F6] focus:ring-[#4F39F6] accent-[#4F39F6]"
                     />
                     <span className="ml-2">{item.label}</span>
                   </label>
@@ -324,21 +329,30 @@ export default function SearchFilters({ filterOptions, newTodayCount }) {
             <button
               type="button"
               onClick={clearFilters}
-              className="text-sm text-gray-600 hover:text-red-600 font-medium hover-lift"
+              className="text-sm text-gray-600 hover:text-red-600 font-medium hover:underline underline-offset-2 hover-lift"
             >
               Sıfırla
             </button>
             <button
               type="button"
               onClick={() => setShowMore(!showMore)}
-              className="text-sm font-medium text-[#4F39F6] hover:underline hover-lift"
+              className="text-sm font-medium text-[#4F39F6] hover:underline underline-offset-2 hover-lift flex items-center"
             >
               {showMore ? "Daha az filtr" : "Daha çox filtr"}
+              <span
+                className={`ml-1 inline-block transform transition-transform ${
+                  showMore ? "rotate-180" : ""
+                }`}
+                aria-hidden="true"
+              >
+                <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 10.94l3.71-3.71a.75.75 0 1 1 1.06 1.06l-4.24 4.24a.75.75 0 0 1-1.06 0L5.21 8.29a.75.75 0 0 1 .02-1.08z"/>
+                </svg>
+              </span>
             </button>
             <button
               type="submit"
-              style={{ backgroundColor: "#4F39F6" }}
-              className="px-8 py-2.5 text-sm font-semibold text-white rounded-md hover:opacity-90 transition-opacity btn-3d"
+              className="px-8 py-2.5 text-sm font-semibold text-white rounded-lg bg-gradient-to-r from-[#4F39F6] to-[#6A5AF9] hover:from-[#4F39F6] hover:to-[#7C5CFA] transition-all shadow-md hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[#4F39F6] active:scale-[0.98] flex items-center gap-2 cursor-pointer"
             >
               Elanları göstər
             </button>
