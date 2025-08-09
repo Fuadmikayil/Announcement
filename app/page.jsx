@@ -122,7 +122,7 @@ export default async function HomePage({ searchParams }) {
       <div id="search-filters" className="container mx-auto px-4 -mt-16 relative z-10">
         <SearchFilters filterOptions={filterOptions} newTodayCount={newTodayCount} />
       </div>
-      <div className="container mx-auto px-4 py-8">
+      <div className="container  mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6">{hasFilters ? 'Axtarış Nəticələri' : 'Son Elanlar'}</h1>
         {listings && listings.length > 0 ? (
           <>
