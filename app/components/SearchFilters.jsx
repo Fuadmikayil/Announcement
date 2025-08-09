@@ -151,7 +151,7 @@ export default function SearchFilters({ filterOptions, newTodayCount }) {
   }));
 
   return (
-    <div className="bg-white/90 backdrop-blur-sm p-4 rounded-lg shadow-lg border border-gray-200">
+    <div className="glass gradient-border p-4 rounded-xl shadow-2xl border border-white/20 fade-in-up">
       <form onSubmit={handleSearch} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <CustomSelect
@@ -324,21 +324,21 @@ export default function SearchFilters({ filterOptions, newTodayCount }) {
             <button
               type="button"
               onClick={clearFilters}
-              className="text-sm text-gray-600 hover:text-red-600 font-medium"
+              className="text-sm text-gray-600 hover:text-red-600 font-medium hover-lift"
             >
               Sıfırla
             </button>
             <button
               type="button"
               onClick={() => setShowMore(!showMore)}
-              className="text-sm font-medium text-[#4F39F6] hover:underline"
+              className="text-sm font-medium text-[#4F39F6] hover:underline hover-lift"
             >
               {showMore ? "Daha az filtr" : "Daha çox filtr"}
             </button>
             <button
               type="submit"
               style={{ backgroundColor: "#4F39F6" }}
-              className="px-8 py-2.5 text-sm font-semibold text-white rounded-md hover:opacity-90 transition-opacity"
+              className="px-8 py-2.5 text-sm font-semibold text-white rounded-md hover:opacity-90 transition-opacity btn-3d"
             >
               Elanları göstər
             </button>

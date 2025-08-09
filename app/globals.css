@@ -1,1 +1,249 @@
 @import "tailwindcss";
+
+/* --- UI ENHANCEMENTS: animations, skeleton, gradient text --- */
+:root {
+  --brand-start: #4F39F6;
+  --brand-end: #7C3AED;
+  --glass-bg: rgba(255, 255, 255, 0.68);
+  --glass-brd: rgba(255, 255, 255, 0.35);
+  --shadow-deep: 0 25px 60px rgba(79, 57, 246, 0.22), 0 8px 24px rgba(2, 6, 23, 0.16);
+}
+
+/* Background slow zoom (Hero) */
+@keyframes heroZoom {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.08); }
+}
+.animate-hero-zoom { animation: heroZoom 18s ease-in-out infinite alternate; will-change: transform; }
+
+/* Enter animation */
+@keyframes fadeInUp {
+  0% { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.fade-in-up { animation: fadeInUp .6s ease-out both; }
+
+/* Shiny CTA */
+@keyframes shine {
+  0% { left: -60%; }
+  100% { left: 120%; }
+}
+.btn-shine { position: relative; overflow: hidden; }
+.btn-shine::after {
+  content: "";
+  position: absolute;
+  top: -100%;
+  left: -50%;
+  width: 50%;
+  height: 300%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.45), transparent);
+  transform: rotate(25deg);
+  animation: shine 2.8s infinite;
+}
+
+/* Image skeleton shimmer */
+@keyframes skeleton {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.skeleton {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, #f3f4f6 0%, #e5e7eb 20%, #f3f4f6 40%);
+  background-size: 200% 100%;
+  animation: skeleton 1.4s ease-in-out infinite;
+  border-radius: 0.5rem;
+}
+
+/* Gradient text utility */
+.gradient-text {
+  background: linear-gradient(90deg, var(--brand-start), var(--brand-end));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* 3D utilities and visual polish */
+/* Perspective + 3D */
+.perspective-1000 { perspective: 1000px; }
+.preserve-3d { transform-style: preserve-3d; }
+.card-3d { transform: translateZ(0); transition: transform .4s ease, box-shadow .4s ease; box-shadow: 0 10px 25px rgba(2,6,23,.08); }
+.tilt { transform: rotateX(0) rotateY(0) translateZ(0); }
+.tilt:hover { transform: rotateX(6deg) rotateY(-6deg) translateZ(10px); }
+.depth-shadow:hover { box-shadow: var(--shadow-deep); }
+.hover-lift:hover { transform: translateY(-4px) translateZ(6px); }
+
+/* Glass panel */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-brd);
+  border-radius: 1rem;
+}
+
+/* Gradient border wrapper */
+.gradient-border { position: relative; border-radius: 1rem; }
+.gradient-border::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--brand-start), var(--brand-end));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  padding: 1px;
+  pointer-events: none;
+}
+
+/* Header/ Footer gradient separators */
+.header-3d { position: sticky; top: 0; z-index: 50; }
+.header-3d::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--brand-start), var(--brand-end), transparent);
+  opacity: .6;
+  pointer-events: none;
+}
+.footer-3d { position: relative; }
+.footer-3d::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--brand-start), var(--brand-end), transparent);
+  opacity: .4;
+  pointer-events: none;
+}
+
+/* Image shine overlay */
+.shine-layer {
+  position: absolute; inset: 0; border-radius: inherit;
+  background: radial-gradient(600px circle at 50% 0%, rgba(255,255,255,.35), transparent 40%);
+  opacity: 0;
+  transition: opacity .3s ease;
+  pointer-events: none;
+}
+.group:hover .shine-layer { opacity: .8; }
+
+/* Floating blobs for hero parallax feel */
+@keyframes floatSoft {
+  0% { transform: translate3d(0,0,0) rotate(0deg); }
+  50% { transform: translate3d(10px,-12px,0) rotate(8deg); }
+  100% { transform: translate3d(0,0,0) rotate(0deg); }
+}
+.parallax-blob {
+  position: absolute;
+  filter: blur(18px);
+  opacity: .45;
+  will-change: transform, opacity;
+  animation: floatSoft 12s ease-in-out infinite;
+}
+.parallax-blob.slow { animation-duration: 18s; opacity: .35; }
+.parallax-blob.fast { animation-duration: 9s; opacity: .5; }
+
+/* 3D button press effect */
+.btn-3d {
+  transform: translateZ(0);
+  box-shadow: 0 8px 0 rgba(49, 46, 129, .75), 0 14px 24px rgba(79, 57, 246, .35);
+  transition: transform .15s ease, box-shadow .3s ease;
+}
+.btn-3d:active {
+  transform: translateY(2px);
+  box-shadow: 0 6px 0 rgba(49, 46, 129, .75), 0 10px 20px rgba(79, 57, 246, .35);
+}
+
+/* Site-wide animated background layers */
+.bg-animated::before {
+  content: "";
+  position: fixed;
+  inset: -10%;
+  pointer-events: none;
+  z-index: -1;
+  background:
+    radial-gradient(40% 60% at 15% 20%, rgba(79, 57, 246, 0.25), transparent 60%),
+    radial-gradient(35% 55% at 85% 25%, rgba(124, 58, 237, 0.22), transparent 60%),
+    radial-gradient(25% 45% at 50% 80%, rgba(236, 72, 153, 0.16), transparent 60%);
+  filter: blur(50px) saturate(1.05) hue-rotate(var(--h));
+  animation: orbsFloat 30s ease-in-out infinite alternate, hueShift 24s linear infinite;
+}
+.bg-animated::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background-image:
+    linear-gradient(rgba(99, 102, 241, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124, 58, 237, 0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+  background-position: 0 0, 0 0;
+  mask-image: radial-gradient(ellipse at 50% 30%, rgba(0,0,0,.55), transparent 70%);
+  animation: gridPan 60s linear infinite;
+  transform-origin: center bottom;
+  transform: perspective(1000px) rotateX(60deg) translateY(-15%);
+  opacity: 0.65;
+}
+
+/* Smoothly animate hue for orbs */
+@property --h {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+/* Aurora and starfield layers */
+.fx-layer { position: fixed; inset: 0; pointer-events: none; z-index: -2; will-change: transform, opacity, filter; }
+
+.fx-aurora {
+  z-index: -2;
+  mix-blend-mode: screen;
+  opacity: .45;
+  filter: blur(60px) saturate(1.05);
+  background:
+    conic-gradient(from 200deg at 25% 15%, rgba(99,102,241,.28), rgba(236,72,153,.18), rgba(124,58,237,.24), rgba(99,102,241,.28));
+  animation: auroraWave 28s ease-in-out infinite alternate;
+}
+
+.fx-stars {
+  z-index: -3;
+  opacity: .28;
+  background-repeat: repeat;
+  background-size:
+    256px 256px,
+    256px 256px,
+    256px 256px,
+    256px 256px;
+  background-image:
+    radial-gradient(1px 1px at 20px 30px, rgba(255,255,255,.70), transparent 40%),
+    radial-gradient(1.2px 1.2px at 80px 120px, rgba(255,255,255,.55), transparent 40%),
+    radial-gradient(1px 1px at 160px 60px, rgba(255,255,255,.45), transparent 40%),
+    radial-gradient(1.5px 1.5px at 220px 200px, rgba(255,255,255,.40), transparent 45%);
+  animation: starDrift 120s linear infinite, starsTwinkle 4.6s ease-in-out infinite alternate;
+}
+
+/* Animations */
+@keyframes orbsFloat {
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(-3%) scale(1.05); }
+}
+@keyframes gridPan {
+  0% { background-position: 0 0, 0 0; }
+  100% { background-position: 480px 240px, 480px 240px; }
+}
+@keyframes hueShift { to { --h: 360deg; } }
+@keyframes auroraWave {
+  0% { transform: translate3d(0,-2%,0) rotate(0deg) scale(1); }
+  100% { transform: translate3d(0,2%,0) rotate(8deg) scale(1.05); }
+}
+@keyframes starsTwinkle {
+  0% { opacity: .20; }
+  100% { opacity: .38; }
+}
+@keyframes starDrift {
+  0%   { background-position:   0px   0px,    0px   0px,    0px   0px,    0px   0px; }
+  100% { background-position: -512px 256px, -256px 128px,  256px -128px, 128px -256px; }
+}

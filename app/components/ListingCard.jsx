@@ -29,26 +29,30 @@ export default async function ListingCard({ listing }) {
 
   const formattedPrice = new Intl.NumberFormat('az-AZ').format(listing.price)
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden group transition-shadow duration-300 hover:shadow-xl">
-      <div className="relative">
-        <Link href={`/create/${listing.id}`} className="block">
-            <div className="relative w-full h-48">
-                <ListingImage
-                    src={coverUrl}
-                    alt={`${listing.brand} ${listing.model}`}
-                    fill
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-            </div>
-        </Link>
-        {user && <FavoriteButton listingId={listing.id} isInitiallyFavorited={isFavorited} />}
-      </div>
-      <div className="p-4">
-        <p className="text-lg font-bold text-indigo-600">{formattedPrice} AZN</p>
-        <h3 className="text-xl font-semibold text-gray-800 mt-1 truncate">{listing.brand} {listing.model}</h3>
-        <p className="text-sm text-gray-500 mt-2">{listing.year}, {listing.engine_volume} L, {listing.mileage} km</p>
-        <p className="text-sm text-gray-500 mt-1">{listing.city}</p>
+    <div className="perspective-1000">
+      <div className="bg-white rounded-lg border border-gray-100/60 shadow-md overflow-hidden group transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl fade-in-up card-3d tilt depth-shadow">
+        <div className="relative">
+          <Link href={`/create/${listing.id}`} className="block">
+              <div className="relative w-full h-48 preserve-3d">
+                  <ListingImage
+                      src={coverUrl}
+                      alt={`${listing.brand} ${listing.model}`}
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                  {/* shine overlay */}
+                  <div className="shine-layer"></div>
+              </div>
+          </Link>
+          {user && <FavoriteButton listingId={listing.id} isInitiallyFavorited={isFavorited} />}
+        </div>
+        <div className="p-4">
+          <p className="text-lg font-bold text-indigo-600">{formattedPrice} AZN</p>
+          <h3 className="text-xl font-semibold text-gray-800 mt-1 truncate">{listing.brand} {listing.model}</h3>
+          <p className="text-sm text-gray-500 mt-2">{listing.year}, {listing.engine_volume} L, {listing.mileage} km</p>
+          <p className="text-sm text-gray-500 mt-1">{listing.city}</p>
+        </div>
       </div>
     </div>
   )

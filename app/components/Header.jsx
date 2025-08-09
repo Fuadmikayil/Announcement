@@ -11,7 +11,15 @@ export default function Header() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname(); // Route hər dəyişəndə trigger olur
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -37,12 +45,11 @@ export default function Header() {
     fetchUser();
   }, [pathname]); // Route dəyişdikcə təkrar fetch edir
 
-
   return (
-    <header className="bg-white shadow-md sticky top-0 z-50">
+    <header className={`header-3d transition-all ${scrolled ? 'bg-white/80 backdrop-blur-md shadow-md' : 'bg-white/60 backdrop-blur-sm shadow'}`}>
       <nav className="container mx-auto px-4 sm:px-6 py-3">
         <div className="flex justify-between items-center">
-          <Link href="/" className="text-2xl font-bold text-indigo-600">AvtoAZ</Link>
+          <Link href="/" className="text-2xl font-bold gradient-text">AvtoAZ</Link>
           
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-4">

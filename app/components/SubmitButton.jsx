@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useFormStatus } from 'react-dom'
@@ -7,7 +6,7 @@ export function SubmitButton({ children, pendingText, className }) {
   const { pending } = useFormStatus()
 
   return (
-    <button type="submit" disabled={pending} className={className}>
+    <button type="submit" disabled={pending} className={`${className} btn-3d`}>
       {pending ? (
         <>
           <svg className="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

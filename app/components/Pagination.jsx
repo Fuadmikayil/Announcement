@@ -1,4 +1,3 @@
-
 'use client'
 
 import { usePathname, useSearchParams } from 'next/navigation'
@@ -24,7 +23,7 @@ export default function Pagination({ totalPages }) {
       {/* Əvvəlki düyməsi */}
       <Link
         href={createPageURL(currentPage - 1)}
-        className={`px-4 py-2 text-sm font-medium text-gray-700 bg-white rounded-md border border-gray-300 hover:bg-gray-50 ${currentPage <= 1 ? 'pointer-events-none opacity-50' : ''}`}
+        className={`px-4 py-2 text-sm font-medium text-gray-700 bg-white rounded-md border border-gray-300 hover:bg-gray-50 transition-transform hover:-translate-y-px btn-3d ${currentPage <= 1 ? 'pointer-events-none opacity-50' : ''}`}
       >
         Əvvəlki
       </Link>
@@ -37,7 +36,7 @@ export default function Pagination({ totalPages }) {
       {/* Növbəti düyməsi */}
       <Link
         href={createPageURL(currentPage + 1)}
-        className={`px-4 py-2 text-sm font-medium text-gray-700 bg-white rounded-md border border-gray-300 hover:bg-gray-50 ${currentPage >= totalPages ? 'pointer-events-none opacity-50' : ''}`}
+        className={`px-4 py-2 text-sm font-medium text-gray-700 bg-white rounded-md border border-gray-300 hover:bg-gray-50 transition-transform hover:-translate-y-px btn-3d ${currentPage >= totalPages ? 'pointer-events-none opacity-50' : ''}`}
       >
         Növbəti
       </Link>
