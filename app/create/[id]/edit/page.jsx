@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useTransition } from 'react'
+import { useState, useEffect, useTransition, useRef } from 'react'
 import { useSearchParams, useParams, notFound } from 'next/navigation'
 import { createClient } from '../../../../lib/supabase/client'
 import Image from 'next/image'
@@ -43,6 +43,11 @@ export default function EditListingPage() {
   const [isLoadingModels, setIsLoadingModels] = useState(false);
   // NEW: signed URLs for existing images (preview only)
   const [signedExistingImages, setSignedExistingImages] = useState([]);
+
+  // NEW: external delete form refs (avoid nested forms)
+  const deleteFormRef = useRef(null);
+  const deleteListingIdRef = useRef(null);
+  const deleteImageUrlRef = useRef(null);
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -179,6 +184,18 @@ export default function EditListingPage() {
     setPreviews(current => current.filter((_, i) => i !== index));
   };
 
+  // NEW: submit delete via external hidden form
+  const handleClickDeleteImage = (imageUrl) => {
+    if (!deleteFormRef.current) return;
+    if (deleteListingIdRef.current) deleteListingIdRef.current.value = listing.id;
+    if (deleteImageUrlRef.current) deleteImageUrlRef.current.value = imageUrl;
+    if (typeof deleteFormRef.current.requestSubmit === 'function') {
+      deleteFormRef.current.requestSubmit();
+    } else {
+      deleteFormRef.current.submit();
+    }
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     const submissionFormData = new FormData(event.currentTarget);
@@ -264,18 +281,16 @@ export default function EditListingPage() {
                       height={150}
                       className="rounded-md object-cover w-full h-28"
                     />
-                    <form action={deleteImage} className="absolute top-1 right-1">
-                      <input type="hidden" name="listingId" value={listing.id} />
-                      {/* Keep original URL for delete action */}
-                      <input type="hidden" name="imageUrl" value={url} />
-                      <button
-                        type="submit"
-                        title="Sil"
-                        className="bg-black bg-opacity-60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100"
-                      >
-                        <Trash2 width="16" height="16" />
-                      </button>
-                    </form>
+                    {/* REPLACED nested form with a button that submits external form */}
+                    {/* Keep original URL for delete action */}
+                    <button
+                      type="button"
+                      onClick={() => handleClickDeleteImage(url)}
+                      title="Sil"
+                      className="absolute top-1 right-1 bg-black bg-opacity-60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100"
+                    >
+                      <Trash2 width="16" height="16" />
+                    </button>
                   </div>
                 ))}
               </div>
@@ -377,6 +392,12 @@ export default function EditListingPage() {
               {isPending ? 'Yadda saxlanılır...' : 'Dəyişiklikləri Yadda Saxla'}
             </button>
           </div>
+        </form>
+
+        {/* NEW: Hidden external form for deleteImage to avoid nested forms */}
+        <form action={deleteImage} ref={deleteFormRef} className="hidden">
+          <input type="hidden" name="listingId" ref={deleteListingIdRef} />
+          <input type="hidden" name="imageUrl" ref={deleteImageUrlRef} />
         </form>
       </div>
     </div>
