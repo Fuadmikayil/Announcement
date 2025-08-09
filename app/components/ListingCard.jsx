@@ -43,6 +43,21 @@ export default async function ListingCard({ listing }) {
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                 className="parallax object-cover transform-gpu"
               />
+              {/* NEW: Kredit / Barter badges */}
+              {(listing.credit || listing.barter) && (
+                <div className="absolute top-2 left-2 z-10 flex gap-1">
+                  {listing.credit && (
+                    <span className="px-2 py-0.5 text-[10px] font-semibold bg-green-600 text-white rounded-md shadow">
+                      Kredit
+                    </span>
+                  )}
+                  {listing.barter && (
+                    <span className="px-2 py-0.5 text-[10px] font-semibold bg-purple-600 text-white rounded-md shadow">
+                      Barter
+                    </span>
+                  )}
+                </div>
+              )}
               {/* Sweeping shine overlay (home page scoped via .home-listings) */}
               <div className="shine-sweep"></div>
               {/* shine overlay */}
