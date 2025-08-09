@@ -8,6 +8,9 @@ import Hero from './components/Hero.jsx'
 const LISTINGS_PER_PAGE = 12;
 
 async function getFilterOptions(supabase) {
+  if (!supabase) {
+    return { brands: [], cities: [], bodyTypes: [], colors: [] };
+  }
   const [brandsRes, citiesRes, bodyTypesRes, colorsRes] = await Promise.all([
     supabase.from('brands').select('id, name').order('name', { ascending: true }),
     supabase.from('cities').select('name').order('name', { ascending: true }),
@@ -24,6 +27,7 @@ async function getFilterOptions(supabase) {
 }
 
 async function getNewTodayCount(supabase) {
+  if (!supabase) return 0;
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
   const { count, error } = await supabase
@@ -40,7 +44,10 @@ async function getNewTodayCount(supabase) {
 
 export default async function HomePage({ searchParams }) {
   // Next.js 15+ searchParams asinxrondur, await etməliyik:
-  const params = typeof searchParams.then === 'function' ? await searchParams : searchParams;
+  const params =
+    searchParams && typeof searchParams.then === 'function'
+      ? await searchParams
+      : (searchParams || {});
 
   const page = params['page'] ?? '1';
   const brand = params['brand'] ?? '';
@@ -57,57 +64,71 @@ export default async function HomePage({ searchParams }) {
   const condition = params['condition'] ?? '';
 
   // Supabase client yaradılır
-  const supabase = await createClient();
-
-  // Sorğu yaradılır
-  let query = supabase.from('listings').select('*', { count: 'exact' }).eq('status', 'approved');
-
-  if (brand) query = query.ilike('brand', `%${brand}%`);
-  if (model) query = query.ilike('model', `%${model}%`);
-  if (city) query = query.eq('city', city);
-  if (minPrice) query = query.gte('price', minPrice);
-  if (maxPrice) query = query.lte('price', maxPrice);
-  if (minYear) query = query.gte('year', minYear);
-  if (maxYear) query = query.lte('year', maxYear);
-  if (bodyType) query = query.eq('body_type', bodyType);
-  if (color) query = query.eq('color', color);
-  if (credit === 'true') query = query.eq('credit', true);
-  if (barter === 'true') query = query.eq('barter', true);
-  if (condition === 'new') query = query.eq('is_new', true);
-  if (condition === 'used') query = query.eq('is_new', false);
-
-  const equipmentFilters = [
-    'has_alloy_wheels',
-    'has_abs',
-    'has_sunroof',
-    'has_rain_sensor',
-    'has_central_locking',
-    'has_park_assist',
-    'has_ac',
-    'has_heated_seats',
-    'has_leather_seats',
-    'has_xenon_lights',
-    'has_360_camera',
-    'has_rear_camera',
-    'has_side_curtains',
-    'has_ventilated_seats'
-  ];
-  equipmentFilters.forEach(filter => {
-    if (params[filter] === 'true') {
-      query = query.eq(filter, true);
-    }
-  });
+  let supabase;
+  try {
+    supabase = await createClient();
+  } catch (e) {
+    console.error('Supabase client init failed:', e);
+    supabase = null;
+  }
 
   // Pagination
   const from = (Number(page) - 1) * LISTINGS_PER_PAGE;
   const to = from + LISTINGS_PER_PAGE - 1;
-  query = query.range(from, to);
 
-  // Sorğu icrası
-  const { data: listings, error, count } = await query.order('approved_at', { ascending: false });
-  if (error) console.error("Elanları çəkərkən xəta:", error);
+  // Sorğu icrası (yalnız Supabase mövcuddursa)
+  let listings = [];
+  let count = 0;
+  if (supabase) {
+    let query = supabase.from('listings').select('*', { count: 'exact' }).eq('status', 'approved');
 
-  const totalPages = Math.ceil((count || 0) / LISTINGS_PER_PAGE);
+    if (brand) query = query.ilike('brand', `%${brand}%`);
+    if (model) query = query.ilike('model', `%${model}%`);
+    if (city) query = query.eq('city', city);
+    if (minPrice) query = query.gte('price', minPrice);
+    if (maxPrice) query = query.lte('price', maxPrice);
+    if (minYear) query = query.gte('year', minYear);
+    if (maxYear) query = query.lte('year', maxYear);
+    if (bodyType) query = query.eq('body_type', bodyType);
+    if (color) query = query.eq('color', color);
+    if (credit === 'true') query = query.eq('credit', true);
+    if (barter === 'true') query = query.eq('barter', true);
+    if (condition === 'new') query = query.eq('is_new', true);
+    if (condition === 'used') query = query.eq('is_new', false);
+
+    const equipmentFilters = [
+      'has_alloy_wheels',
+      'has_abs',
+      'has_sunroof',
+      'has_rain_sensor',
+      'has_central_locking',
+      'has_park_assist',
+      'has_ac',
+      'has_heated_seats',
+      'has_leather_seats',
+      'has_xenon_lights',
+      'has_360_camera',
+      'has_rear_camera',
+      'has_side_curtains',
+      'has_ventilated_seats'
+    ];
+    equipmentFilters.forEach(filter => {
+      if (params[filter] === 'true') {
+        query = query.eq(filter, true);
+      }
+    });
+
+    query = query.range(from, to);
+
+    const { data, error, count: total } = await query.order('approved_at', { ascending: false });
+    if (error) console.error('Elanları çəkərkən xəta:', error);
+    listings = data || [];
+    count = total || 0;
+  } else {
+    console.error('Supabase client mövcud deyil, elan sorğusu atlanır.');
+  }
+
+  const totalPages = Math.ceil(count / LISTINGS_PER_PAGE);
 
   // Filtrlər və elan sayını çək
   const filterOptions = await getFilterOptions(supabase);

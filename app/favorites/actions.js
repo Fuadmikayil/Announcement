@@ -1,4 +1,3 @@
-
 // FAYL: /app/favorites/actions.js (DƏYİŞMƏZ)
 'use server'
 import { createClient } from '../../lib/supabase/server'
@@ -6,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 
 export async function toggleFavorite(listingId, isFavorited) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
