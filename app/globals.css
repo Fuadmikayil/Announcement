@@ -68,6 +68,25 @@
 .perspective-1000 { perspective: 1000px; }
 .preserve-3d { transform-style: preserve-3d; }
 .card-3d { transform: translateZ(0); transition: transform .4s ease, box-shadow .4s ease; box-shadow: 0 10px 25px rgba(2,6,23,.08); }
+/* NEW: improve performance hints */
+.card-3d { will-change: transform; contain: layout paint; }
+/* NEW: richer 3D hover for cards with layered parallax */
+.tilt-3d { transform: translateZ(0); transform-style: preserve-3d; transition: transform .28s ease, box-shadow .28s ease; will-change: transform, box-shadow; }
+.parallax { transform: translateZ(0) scale(1); transition: transform .35s cubic-bezier(.2,.8,.2,1); will-change: transform; }
+@media (hover: hover) and (pointer: fine) {
+  .tilt-3d:hover { transform: rotateX(8deg) rotateY(-8deg) translateZ(14px) scale(1.01); box-shadow: var(--shadow-deep); }
+  .tilt-3d:hover .parallax { transform: translateZ(26px) scale(1.05); }
+  .tilt-3d:hover .shine-layer { opacity: .9; }
+}
+
+/* Prefer reduced motion: disable heavy animations/transforms */
+@media (prefers-reduced-motion: reduce) {
+  .animate-hero-zoom, .fade-in-up, .btn-shine::after, .skeleton, .parallax-blob,
+  .bg-animated::before, .bg-animated::after, .fx-aurora, .fx-stars { animation: none !important; }
+  .tilt, .tilt-3d, .hover-lift, .card-3d { transition: none !important; transform: none !important; box-shadow: none !important; }
+}
+
+/* Tilt */
 .tilt { transform: rotateX(0) rotateY(0) translateZ(0); }
 .tilt:hover { transform: rotateX(6deg) rotateY(-6deg) translateZ(10px); }
 .depth-shadow:hover { box-shadow: var(--shadow-deep); }
