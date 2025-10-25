@@ -1,4 +1,4 @@
-// FAYL: /app/profil/edit/[id]/actions.js (YENİ FAYL)
+// FAYL: /app/profil/edit/[id]/actions.js 
 'use server'
 
 import { createClient } from '../../../../lib/supabase/server'

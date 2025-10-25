@@ -1,4 +1,4 @@
-// FAYL: /app/elanlar/[id]/page.jsx (YENİLƏNMİŞ)
+// FAYL: /app/elanlar/[id]/page.jsx 
 // AÇIQLAMA: SVG ikonlarındakı səhv xmlns atributu düzəldildi.
 import { createClient } from '../../../lib/supabase/server'
 import { notFound } from 'next/navigation'
